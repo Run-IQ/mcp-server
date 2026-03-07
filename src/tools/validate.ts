@@ -2,13 +2,15 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
+import type { PluginDescriptor } from '../types/descriptor.js';
+import { buildValidateExtensionErrors } from './schema-builder.js';
 
 const RuleSchema = z.object({
   id: z.string(),
   version: z.number(),
   model: z.string(),
   params: z.unknown(),
-  priority: z.number(),
+  priority: z.number().optional(),
   effectiveFrom: z.string(),
   effectiveUntil: z.string().nullable(),
   tags: z.array(z.string()),
@@ -25,10 +27,11 @@ interface ValidationEntry {
 export function registerValidateRulesTool(
   server: McpServer,
   models: ReadonlyMap<string, CalculationModel>,
+  descriptors: readonly PluginDescriptor[],
 ): void {
   server.tool(
     'validate_rules',
-    'Validate the structure and checksum of Run-IQ rules. Checks required fields, SHA-256 checksum integrity, model existence, and parameter validity.',
+    'Validate the structure, checksum, model params, and plugin-specific fields of Run-IQ rules.',
     {
       rules: z.array(z.record(z.unknown())).describe('Array of Rule JSON objects to validate'),
     },
@@ -70,6 +73,10 @@ export function registerValidateRulesTool(
             errors.push(...validation.errors);
           }
         }
+
+        // Plugin extension validation
+        const extensionErrors = buildValidateExtensionErrors(raw, descriptors);
+        errors.push(...extensionErrors);
 
         entries.push({
           ruleId: rule.id,

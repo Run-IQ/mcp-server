@@ -2,14 +2,17 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
+import type { PluginDescriptor } from '../types/descriptor.js';
+import { buildValidateExtensionErrors } from './schema-builder.js';
 
 export function registerInspectRuleTool(
   server: McpServer,
   models: ReadonlyMap<string, CalculationModel>,
+  descriptors: readonly PluginDescriptor[],
 ): void {
   server.tool(
     'inspect_rule',
-    'Analyze a single Run-IQ rule in detail. Checks checksum validity, model availability, active date status, and parameter errors.',
+    'Analyze a single Run-IQ rule in detail: checksum, model, active dates, params, and plugin-specific fields.',
     {
       rule: z.record(z.unknown()).describe('A single Rule JSON object to inspect'),
     },
@@ -37,6 +40,9 @@ export function registerInspectRuleTool(
         }
       }
 
+      // Plugin extension validation
+      const extensionErrors = buildValidateExtensionErrors(rule, descriptors);
+
       // Active date check
       const now = new Date();
       const effectiveFrom =
@@ -54,17 +60,24 @@ export function registerInspectRuleTool(
         until: effectiveUntil?.toISOString() ?? null,
       };
 
-      const valid = checksumMatch && modelFound && !paramErrors && isActive;
+      const allErrors = [...(paramErrors ?? []), ...extensionErrors];
+      const valid = checksumMatch && modelFound && allErrors.length === 0 && isActive;
 
-      const result = {
+      const result: Record<string, unknown> = {
         ruleId: id,
         valid,
         checksumMatch,
         modelFound,
         isActive,
         effectivePeriod,
-        ...(paramErrors ? { paramErrors } : {}),
       };
+
+      if (paramErrors && paramErrors.length > 0) {
+        result['paramErrors'] = paramErrors;
+      }
+      if (extensionErrors.length > 0) {
+        result['extensionErrors'] = extensionErrors;
+      }
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
