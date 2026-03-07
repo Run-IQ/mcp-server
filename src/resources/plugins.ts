@@ -1,31 +1,38 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { FiscalPlugin } from '@run-iq/plugin-fiscal';
-import type { JsonLogicEvaluator } from '@run-iq/dsl-jsonlogic';
+import type { PPEPlugin, DSLEvaluator } from '@run-iq/core';
+import type { DescriptorRegistry } from '../descriptors/registry.js';
 
 export function registerPluginsResource(
   server: McpServer,
-  fiscalPlugin: FiscalPlugin,
-  jsonLogicEvaluator: JsonLogicEvaluator,
+  plugins: readonly PPEPlugin[],
+  dsls: readonly DSLEvaluator[],
+  registry: DescriptorRegistry,
 ): void {
   server.resource(
     'plugins-loaded',
     'plugins://loaded',
-    { description: 'Information about loaded plugins and DSL evaluators' },
+    { description: 'Information about loaded plugins, DSL evaluators, and their descriptors' },
     () => {
+      const descriptors = registry.getAll();
+
       const info = {
-        plugins: [
-          {
-            name: fiscalPlugin.name,
-            version: fiscalPlugin.version,
-            models: fiscalPlugin.models.map((m) => m.name),
-          },
-        ],
-        dsls: [
-          {
-            name: jsonLogicEvaluator.dsl,
-            version: jsonLogicEvaluator.version,
-          },
-        ],
+        plugins: plugins.map((p) => {
+          const desc = descriptors.find((d) => d.name === p.name);
+          const pluginWithModels = p as { models?: { name: string }[] };
+          return {
+            name: p.name,
+            version: p.version,
+            models: Array.isArray(pluginWithModels.models)
+              ? pluginWithModels.models.map((m) => m.name)
+              : [],
+            hasDescriptor: desc !== undefined,
+            ruleExtensions: desc?.ruleExtensions.map((f) => f.name) ?? [],
+          };
+        }),
+        dsls: dsls.map((d) => ({
+          name: d.dsl,
+          version: d.version,
+        })),
       };
 
       return {
