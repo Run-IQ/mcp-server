@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import type { PluginBundle } from './types/descriptor.js';
+import type { PluginBundle } from '@run-iq/plugin-sdk';
 import { createEngine } from './engine.js';
 import { loadPluginsFromDir } from './loader/plugin-loader.js';
 import { registerCreateChecksumTool } from './tools/create-checksum.js';
@@ -14,8 +14,8 @@ import { registerSimulateTool } from './tools/simulate.js';
 import { registerModelsResource } from './resources/models.js';
 import { registerPluginsResource } from './resources/plugins.js';
 import { registerSchemaResource } from './resources/schema.js';
-import { registerAnalyzeLawPrompt } from './prompts/analyze-law.js';
-import { registerFiscalExpertPrompt } from './prompts/fiscal-expert.js';
+import { registerAnalyzeTextPrompt } from './prompts/analyze-text.js';
+import { registerDomainExpertPrompt } from './prompts/domain-expert.js';
 
 // Parse CLI arguments
 let pluginsDir: string | undefined;
@@ -66,8 +66,8 @@ registerPluginsResource(server, plugins, dsls, descriptorRegistry);
 registerSchemaResource(server, models, descriptorRegistry);
 
 // Prompts
-registerAnalyzeLawPrompt(server, models, descriptorRegistry);
-registerFiscalExpertPrompt(server, descriptorRegistry);
+registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+registerDomainExpertPrompt(server, descriptorRegistry);
 
 // Start stdio transport
 const transport = new StdioServerTransport();

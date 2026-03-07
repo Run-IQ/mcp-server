@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
-import type { PluginDescriptor } from '../types/descriptor.js';
+import type { PluginDescriptor } from '@run-iq/plugin-sdk';
 import { buildValidateExtensionErrors } from './schema-builder.js';
 
 const RuleSchema = z.object({

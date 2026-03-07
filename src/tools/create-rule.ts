@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { PluginDescriptor } from '../types/descriptor.js';
+import type { PluginDescriptor } from '@run-iq/plugin-sdk';
 import { buildCreateRuleSchema } from './schema-builder.js';
 
 export function registerCreateRuleTool(

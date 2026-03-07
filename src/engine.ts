@@ -2,9 +2,9 @@ import { PPEEngine } from '@run-iq/core';
 import type { PPEPlugin, DSLEvaluator, CalculationModel } from '@run-iq/core';
 import { FiscalPlugin } from '@run-iq/plugin-fiscal';
 import { JsonLogicEvaluator } from '@run-iq/dsl-jsonlogic';
-import type { PluginBundle } from './types/descriptor.js';
+import type { PluginBundle } from '@run-iq/plugin-sdk';
+import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
 import { DescriptorRegistry } from './descriptors/registry.js';
-import { fiscalDescriptor } from './descriptors/fiscal.js';
 
 export interface EngineContext {
   readonly engine: PPEEngine;

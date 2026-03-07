@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { PluginBundle } from '../types/descriptor.js';
+import type { PluginBundle } from '@run-iq/plugin-sdk';
 
 export async function loadPluginsFromDir(dir: string): Promise<PluginBundle[]> {
   const bundles: PluginBundle[] = [];

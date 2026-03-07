@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fiscalDescriptor } from '../../src/descriptors/fiscal.js';
+import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
 import {
   buildCreateRuleSchema,
   buildValidateExtensionErrors,

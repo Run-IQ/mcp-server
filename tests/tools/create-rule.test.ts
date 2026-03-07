@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { registerCreateRuleTool } from '../../src/tools/create-rule.js';
-import { fiscalDescriptor } from '../../src/descriptors/fiscal.js';
+import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
 import { callTool } from '../helpers.js';
 
 describe('create_rule tool (plugin-aware)', () => {

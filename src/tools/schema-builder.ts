@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { RuleFieldDescriptor, PluginDescriptor } from '../types/descriptor.js';
+import type { RuleFieldDescriptor, PluginDescriptor } from '@run-iq/plugin-sdk';
 
 function buildFieldSchema(field: RuleFieldDescriptor): z.ZodTypeAny {
   let schema: z.ZodTypeAny;
@@ -38,7 +38,7 @@ export function buildCreateRuleSchema(
       .number()
       .int()
       .optional()
-      .describe('Rule priority (auto-computed from jurisdiction+scope for fiscal rules)'),
+      .describe('Rule priority (may be auto-computed by plugins, e.g. from jurisdiction+scope)'),
     effectiveFrom: z.string().describe('ISO 8601 date string for when the rule becomes active'),
     effectiveUntil: z
       .string()

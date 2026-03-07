@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DescriptorRegistry } from '../../src/descriptors/registry.js';
-import { fiscalDescriptor } from '../../src/descriptors/fiscal.js';
+import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
 
 describe('DescriptorRegistry', () => {
   it('starts empty', () => {

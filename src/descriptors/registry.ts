@@ -3,7 +3,7 @@ import type {
   RuleFieldDescriptor,
   InputFieldDescriptor,
   RuleExample,
-} from '../types/descriptor.js';
+} from '@run-iq/plugin-sdk';
 
 export class DescriptorRegistry {
   private readonly descriptors: PluginDescriptor[] = [];
