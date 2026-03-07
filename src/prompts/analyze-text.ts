@@ -3,6 +3,12 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
 import type { DescriptorRegistry } from '../descriptors/registry.js';
 
+function buildDomainLabel(registry: DescriptorRegistry): string {
+  const descriptors = registry.getAll();
+  if (descriptors.length === 0) return 'policy';
+  return descriptors.map((d) => d.domainLabel).join(' / ');
+}
+
 function buildModelDocs(models: ReadonlyMap<string, CalculationModel>): string {
   const lines: string[] = [];
   for (const [, model] of models) {
@@ -60,17 +66,37 @@ function buildInputDocs(registry: DescriptorRegistry): string {
   return lines.join('\n');
 }
 
-export function registerAnalyzeLawPrompt(
+function buildGuidelinesSection(registry: DescriptorRegistry): string {
+  const descriptors = registry.getAll();
+  const lines: string[] = [];
+
+  for (const desc of descriptors) {
+    if (desc.promptGuidelines.length > 0) {
+      lines.push(`\n## ${desc.domainLabel} Guidelines`);
+      for (const g of desc.promptGuidelines) {
+        lines.push(`- ${g}`);
+      }
+    }
+  }
+
+  return lines.join('\n');
+}
+
+export function registerAnalyzeTextPrompt(
   server: McpServer,
   models: ReadonlyMap<string, CalculationModel>,
   registry: DescriptorRegistry,
 ): void {
+  const domainLabel = buildDomainLabel(registry);
+
   server.prompt(
-    'analyze-law',
-    'Translate a legal/fiscal text into Run-IQ rule definitions. Plugin-aware: includes all required fields.',
+    'analyze-text',
+    `Translate a ${domainLabel} text (law, regulation, policy) into Run-IQ rule definitions. Plugin-aware: includes all required fields.`,
     {
-      legal_text: z.string().describe('The legal or fiscal text to analyze and convert into rules'),
-      country: z.string().optional().describe('Country code (e.g. TG for Togo)'),
+      source_text: z
+        .string()
+        .describe('The regulatory, legal, or policy text to analyze and convert into rules'),
+      country: z.string().optional().describe('ISO country code (e.g. TG, FR, US, IN)'),
     },
     (args) => {
       return {
@@ -79,19 +105,21 @@ export function registerAnalyzeLawPrompt(
             role: 'user',
             content: {
               type: 'text',
-              text: `You are an expert at translating legal texts into structured Run-IQ rules.
+              text: `You are an expert at translating regulatory and policy texts into structured Run-IQ rules.
 
 ## Available Calculation Models
 ${buildModelDocs(models)}
 ${buildExtensionDocs(registry)}
 ${buildInputDocs(registry)}
+${buildGuidelinesSection(registry)}
 
 ## Rule Creation Workflow
-1. Read the legal text carefully
-2. Identify each tax rule, rate, threshold, bracket, or exemption
-3. Use the \`create_rule\` tool — it knows ALL required fields for loaded plugins
-4. Use the \`validate_rules\` tool to verify your rules are valid
-5. Read \`schema://rules\` for the complete field reference if needed
+1. Read the source text carefully
+2. Identify each rule, rate, threshold, bracket, condition, or exemption
+3. Map each identified element to the appropriate calculation model
+4. Use the \`create_rule\` tool — it knows ALL required fields for loaded plugins
+5. Use the \`validate_rules\` tool to verify your rules are valid
+6. Read \`schema://rules\` for the complete field reference if needed
 
 ## JSONLogic Conditions
 \`\`\`json
@@ -99,8 +127,8 @@ ${buildInputDocs(registry)}
 \`\`\`
 ${buildExampleDocs(registry)}
 ${args.country ? `\n## Target Country: ${args.country}\n` : ''}
-## Legal Text to Analyze
-${args.legal_text}`,
+## Source Text to Analyze
+${args.source_text}`,
             },
           },
         ],
