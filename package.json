@@ -1,0 +1,55 @@
+{
+  "name": "@run-iq/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server exposing the PPE engine to LLMs via stdio",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "run-iq-mcp": "./dist/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/ tests/ && prettier --check src/ tests/",
+    "lint:fix": "eslint src/ tests/ --fix && prettier --write src/ tests/"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "@run-iq/core": "^0.1.2",
+    "@run-iq/plugin-fiscal": "^0.1.1",
+    "@run-iq/dsl-jsonlogic": "^0.1.1",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Run-IQ/mcp-server.git"
+  },
+  "homepage": "https://github.com/Run-IQ/mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/Run-IQ/mcp-server/issues"
+  },
+  "author": "Abdou-Raouf ATARMLA",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
