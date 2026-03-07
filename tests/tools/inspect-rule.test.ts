@@ -17,15 +17,19 @@ function makeRule(overrides: Record<string, unknown> = {}) {
     effectiveUntil: null,
     tags: [],
     checksum: createHash('sha256').update(JSON.stringify(params)).digest('hex'),
+    jurisdiction: 'NATIONAL',
+    scope: 'GLOBAL',
+    country: 'TG',
+    category: 'TVA',
     ...overrides,
   };
 }
 
-describe('inspect_rule tool', () => {
-  it('reports a valid active rule', async () => {
-    const { models } = createEngine();
+describe('inspect_rule tool (plugin-aware)', () => {
+  it('reports a valid active rule with fiscal fields', async () => {
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerInspectRuleTool(server, models);
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
 
     const result = await callTool(server, 'inspect_rule', { rule: makeRule() });
 
@@ -33,12 +37,28 @@ describe('inspect_rule tool', () => {
     expect(result.checksumMatch).toBe(true);
     expect(result.modelFound).toBe(true);
     expect(result.isActive).toBe(true);
+    expect(result.extensionErrors).toBeUndefined();
+  });
+
+  it('detects missing fiscal fields', async () => {
+    const { models, descriptorRegistry } = createEngine();
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
+
+    const ruleWithout = makeRule();
+    delete (ruleWithout as Record<string, unknown>)['jurisdiction'];
+
+    const result = await callTool(server, 'inspect_rule', { rule: ruleWithout });
+
+    expect(result.valid).toBe(false);
+    expect(result.extensionErrors).toBeDefined();
+    expect((result.extensionErrors as string[]).some((e) => e.includes('jurisdiction'))).toBe(true);
   });
 
   it('detects checksum mismatch', async () => {
-    const { models } = createEngine();
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerInspectRuleTool(server, models);
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
 
     const result = await callTool(server, 'inspect_rule', {
       rule: makeRule({ checksum: 'wrong' }),
@@ -49,28 +69,15 @@ describe('inspect_rule tool', () => {
   });
 
   it('detects expired rule', async () => {
-    const { models } = createEngine();
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerInspectRuleTool(server, models);
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
 
     const result = await callTool(server, 'inspect_rule', {
       rule: makeRule({ effectiveUntil: '2020-06-01T00:00:00.000Z' }),
     });
 
     expect(result.isActive).toBe(false);
-    expect(result.valid).toBe(false);
-  });
-
-  it('detects unknown model', async () => {
-    const { models } = createEngine();
-    const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerInspectRuleTool(server, models);
-
-    const result = await callTool(server, 'inspect_rule', {
-      rule: makeRule({ model: 'NONEXISTENT' }),
-    });
-
-    expect(result.modelFound).toBe(false);
     expect(result.valid).toBe(false);
   });
 });

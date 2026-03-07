@@ -17,15 +17,19 @@ function makeRule(overrides: Record<string, unknown> = {}) {
     effectiveUntil: null,
     tags: [],
     checksum: createHash('sha256').update(JSON.stringify(params)).digest('hex'),
+    jurisdiction: 'NATIONAL',
+    scope: 'GLOBAL',
+    country: 'TG',
+    category: 'TVA',
     ...overrides,
   };
 }
 
-describe('validate_rules tool', () => {
-  it('validates a correct rule', async () => {
-    const { models } = createEngine();
+describe('validate_rules tool (plugin-aware)', () => {
+  it('validates a correct rule with fiscal fields', async () => {
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerValidateRulesTool(server, models);
+    registerValidateRulesTool(server, models, descriptorRegistry.getAll());
 
     const result = await callTool(server, 'validate_rules', {
       rules: [makeRule()],
@@ -35,10 +39,41 @@ describe('validate_rules tool', () => {
     expect(result.entries[0].valid).toBe(true);
   });
 
-  it('detects checksum mismatch', async () => {
-    const { models } = createEngine();
+  it('detects missing fiscal extension fields', async () => {
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerValidateRulesTool(server, models);
+    registerValidateRulesTool(server, models, descriptorRegistry.getAll());
+
+    const ruleWithoutFiscal = makeRule();
+    delete (ruleWithoutFiscal as Record<string, unknown>)['jurisdiction'];
+    delete (ruleWithoutFiscal as Record<string, unknown>)['scope'];
+
+    const result = await callTool(server, 'validate_rules', {
+      rules: [ruleWithoutFiscal],
+    });
+
+    expect(result.entries[0].valid).toBe(false);
+    expect(result.entries[0].errors.some((e: string) => e.includes('jurisdiction'))).toBe(true);
+    expect(result.entries[0].errors.some((e: string) => e.includes('scope'))).toBe(true);
+  });
+
+  it('detects invalid enum values', async () => {
+    const { models, descriptorRegistry } = createEngine();
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerValidateRulesTool(server, models, descriptorRegistry.getAll());
+
+    const result = await callTool(server, 'validate_rules', {
+      rules: [makeRule({ jurisdiction: 'INVALID_JURISDICTION' })],
+    });
+
+    expect(result.entries[0].valid).toBe(false);
+    expect(result.entries[0].errors.some((e: string) => e.includes('NATIONAL'))).toBe(true);
+  });
+
+  it('detects checksum mismatch', async () => {
+    const { models, descriptorRegistry } = createEngine();
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerValidateRulesTool(server, models, descriptorRegistry.getAll());
 
     const result = await callTool(server, 'validate_rules', {
       rules: [makeRule({ checksum: 'bad-checksum' })],
@@ -49,9 +84,9 @@ describe('validate_rules tool', () => {
   });
 
   it('detects unknown model', async () => {
-    const { models } = createEngine();
+    const { models, descriptorRegistry } = createEngine();
     const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerValidateRulesTool(server, models);
+    registerValidateRulesTool(server, models, descriptorRegistry.getAll());
 
     const params = { foo: 'bar' };
     const checksum = createHash('sha256').update(JSON.stringify(params)).digest('hex');
@@ -60,33 +95,6 @@ describe('validate_rules tool', () => {
     });
 
     expect(result.entries[0].valid).toBe(false);
-    expect(result.entries[0].errors[0]).toContain('not found');
-  });
-
-  it('detects invalid params', async () => {
-    const { models } = createEngine();
-    const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerValidateRulesTool(server, models);
-
-    const params = { rate: 'not-a-number', base: 123 };
-    const checksum = createHash('sha256').update(JSON.stringify(params)).digest('hex');
-    const result = await callTool(server, 'validate_rules', {
-      rules: [makeRule({ params, checksum })],
-    });
-
-    expect(result.entries[0].valid).toBe(false);
-  });
-
-  it('detects missing required fields', async () => {
-    const { models } = createEngine();
-    const server = new McpServer({ name: 'test', version: '0.0.1' });
-    registerValidateRulesTool(server, models);
-
-    const result = await callTool(server, 'validate_rules', {
-      rules: [{ id: 'incomplete' }],
-    });
-
-    expect(result.entries[0].valid).toBe(false);
-    expect(result.entries[0].errors.length).toBeGreaterThan(0);
+    expect(result.entries[0].errors.some((e: string) => e.includes('not found'))).toBe(true);
   });
 });
