@@ -40,6 +40,6 @@ describe('schema://rules resource', () => {
 
     // Examples
     expect(text).toContain('Complete Rule Examples');
-    expect(text).toContain('TVA 18%');
+    expect(text).toContain('VAT / TVA');
   });
 });

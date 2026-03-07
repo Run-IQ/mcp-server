@@ -21,6 +21,6 @@ describe('models://catalog resource', () => {
     expect(text).toContain('THRESHOLD_BASED');
     expect(text).toContain('FIXED_AMOUNT');
     expect(text).toContain('COMPOSITE');
-    expect(text).toContain('# Run-IQ Fiscal Calculation Models');
+    expect(text).toContain('# Run-IQ Calculation Models');
   });
 });

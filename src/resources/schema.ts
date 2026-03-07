@@ -22,7 +22,9 @@ function buildSchemaDocument(
   lines.push('| version | number | auto (=1) | Rule version |');
   lines.push('| model | string | yes | Calculation model name |');
   lines.push('| params | object | yes | Model-specific parameters |');
-  lines.push('| priority | number | optional | Auto-computed for fiscal rules |');
+  lines.push(
+    '| priority | number | optional | Auto-computed by plugins (e.g. jurisdiction+scope) |',
+  );
   lines.push('| effectiveFrom | string | yes | ISO 8601 date |');
   lines.push('| effectiveUntil | string\\|null | optional | ISO 8601 date or null |');
   lines.push('| tags | string[] | optional | Filtering tags |');

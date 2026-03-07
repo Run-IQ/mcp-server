@@ -4,7 +4,7 @@ import type { CalculationModel } from '@run-iq/core';
 function buildModelsCatalog(models: ReadonlyMap<string, CalculationModel>): string {
   const lines: string[] = [];
 
-  lines.push('# Run-IQ Fiscal Calculation Models');
+  lines.push('# Run-IQ Calculation Models');
   lines.push('');
 
   for (const [, model] of models) {
@@ -91,7 +91,7 @@ export function registerModelsResource(
     'models://catalog',
     {
       description:
-        'Documentation of all available fiscal calculation models with parameter schemas and usage examples',
+        'Documentation of all available calculation models with parameter schemas and usage examples',
     },
     () => {
       const catalog = buildModelsCatalog(models);
