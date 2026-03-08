@@ -1,9 +1,6 @@
 import { PPEEngine } from '@run-iq/core';
 import type { PPEPlugin, DSLEvaluator, CalculationModel } from '@run-iq/core';
-import { FiscalPlugin } from '@run-iq/plugin-fiscal';
-import { JsonLogicEvaluator } from '@run-iq/dsl-jsonlogic';
 import type { PluginBundle } from '@run-iq/plugin-sdk';
-import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
 import { DescriptorRegistry } from './descriptors/registry.js';
 
 export interface EngineContext {
@@ -27,11 +24,6 @@ export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
         allDsls.push(...bundle.dsls);
       }
     }
-  } else {
-    // Default: FiscalPlugin + JsonLogicEvaluator
-    allPlugins.push(new FiscalPlugin());
-    allDsls.push(new JsonLogicEvaluator());
-    descriptorRegistry.register(fiscalDescriptor);
   }
 
   const engine = new PPEEngine({

@@ -46,9 +46,26 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-### Custom plugins
+### Custom Plugins
 
-Load your own plugins from a directory:
+The server is 100% domain-agnostic by default. You MUST attach plugins to give the AI engine capabilities. You can load plugins from NPM packages or from a local directory.
+
+**Option 1: Load from NPM (Recommended)**
+Provides dynamic imports directly from `node_modules` or global installations.
+
+```json
+{
+  "mcpServers": {
+    "run-iq": {
+      "command": "npx",
+      "args": ["@run-iq/mcp-server", "--plugin", "@run-iq/plugin-fiscal", "--plugin", "@my-org/payroll"]
+    }
+  }
+}
+```
+
+**Option 2: Load local bundles**
+Load compiled javascript files from a local directory:
 
 ```json
 {
@@ -121,7 +138,7 @@ Plugin loads → descriptor provides metadata → server adapts everything
 
 ### Default behavior
 
-Without `--plugins-dir`, the server loads `@run-iq/plugin-fiscal` + `@run-iq/dsl-jsonlogic` by default, providing 6 fiscal calculation models (FLAT_RATE, PROGRESSIVE_BRACKET, MINIMUM_TAX, THRESHOLD_BASED, FIXED_AMOUNT, COMPOSITE).
+By default, the server loads an empty engine. You must specify `--plugin` (NPM package) or `--plugins-dir` (local folder) to inject calculation models and rules. For example, passing `--plugin @run-iq/plugin-fiscal` provides the 6 standard tax calculation models.
 
 ### Writing a custom plugin
 

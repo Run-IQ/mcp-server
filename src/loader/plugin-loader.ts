@@ -28,3 +28,31 @@ export async function loadPluginsFromDir(dir: string): Promise<PluginBundle[]> {
 
   return bundles;
 }
+
+export async function loadNpmPlugins(packageNames: string[]): Promise<PluginBundle[]> {
+  const bundles: PluginBundle[] = [];
+
+  for (const pkgName of packageNames) {
+    try {
+      const mod = await import(pkgName);
+      const bundle = (mod['default'] ?? mod) as Record<string, unknown>;
+
+      if (
+        bundle['plugin'] &&
+        typeof bundle['plugin'] === 'object' &&
+        bundle['descriptor'] &&
+        typeof bundle['descriptor'] === 'object'
+      ) {
+        bundles.push(bundle as unknown as PluginBundle);
+      } else {
+        // eslint-disable-next-line no-console
+        console.error(`Invalid PluginBundle exported by NPM package: ${pkgName}`);
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Failed to load NPM plugin: ${pkgName}`, err);
+    }
+  }
+
+  return bundles;
+}
