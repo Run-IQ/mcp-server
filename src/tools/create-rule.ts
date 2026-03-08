@@ -2,6 +2,7 @@ import { hashParams } from '@run-iq/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PluginDescriptor } from '@run-iq/plugin-sdk';
 import { buildCreateRuleSchema } from './schema-builder.js';
+import { sanitizeMcpInput } from '../utils/sanitizer.js';
 
 export function registerCreateRuleTool(
   server: McpServer,
@@ -16,7 +17,8 @@ export function registerCreateRuleTool(
     'create_rule',
     'Generate a valid Run-IQ Rule JSON object with auto-computed SHA-256 checksum. Includes plugin-specific fields based on loaded plugins.',
     schema,
-    (args: Record<string, unknown>) => {
+    (rawArgs: Record<string, unknown>) => {
+      const args = sanitizeMcpInput(rawArgs);
       const params = args['params'] as Record<string, unknown>;
       const checksum = hashParams(params);
 

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PPEEngine } from '@run-iq/core';
 import { hydrateRules } from '@run-iq/core';
+import { sanitizeMcpInput } from '../utils/sanitizer.js';
 
 export function registerEvaluateTool(server: McpServer, engine: PPEEngine): void {
   server.tool(
@@ -28,13 +29,15 @@ export function registerEvaluateTool(server: McpServer, engine: PPEEngine): void
     },
     async (args) => {
       try {
-        const rules = hydrateRules(args.rules);
+        const sanitizedRules = sanitizeMcpInput(args.rules);
+        const rules = hydrateRules(sanitizedRules);
 
         const input = {
-          data: args.input.data,
+          data: sanitizeMcpInput(args.input.data),
           requestId: args.input.requestId,
           meta: {
             ...args.input.meta,
+            context: args.input.meta.context ? sanitizeMcpInput(args.input.meta.context) : undefined,
             effectiveDate: args.input.meta.effectiveDate
               ? new Date(args.input.meta.effectiveDate)
               : undefined,

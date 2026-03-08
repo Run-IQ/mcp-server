@@ -1,6 +1,6 @@
 {
   "name": "@run-iq/mcp-server",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "MCP server exposing the PPE engine to LLMs via stdio",
   "type": "module",
   "main": "./dist/index.js",
@@ -27,9 +27,9 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
-    "@run-iq/core": "^0.2.3",
-    "@run-iq/plugin-fiscal": "^0.2.11",
-    "@run-iq/plugin-sdk": "^0.2.3",
+    "@run-iq/core": "^0.2.4",
+    "@run-iq/plugin-fiscal": "^0.2.12",
+    "@run-iq/plugin-sdk": "^0.2.4",
     "zod": "^3.23.0"
   },
   "devDependencies": {
