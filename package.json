@@ -26,10 +26,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
-    "@run-iq/core": "^0.1.2",
-    "@run-iq/dsl-jsonlogic": "^0.1.1",
-    "@run-iq/plugin-fiscal": "^0.2.0",
-    "@run-iq/plugin-sdk": "^0.2.0",
+    "@run-iq/core": "^0.2.0",
+    "@run-iq/dsl-jsonlogic": "^0.1.2",
+    "@run-iq/plugin-fiscal": "^0.2.2",
+    "@run-iq/plugin-sdk": "^0.2.2",
     "zod": "^3.23.0"
   },
   "devDependencies": {
