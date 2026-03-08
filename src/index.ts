@@ -1,6 +1,6 @@
+import type { PluginBundle } from '@run-iq/plugin-sdk';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import type { PluginBundle } from '@run-iq/plugin-sdk';
 import { createEngine } from './engine.js';
 import { loadPluginsFromDir } from './loader/plugin-loader.js';
 import { registerCreateChecksumTool } from './tools/create-checksum.js';
@@ -16,6 +16,7 @@ import { registerPluginsResource } from './resources/plugins.js';
 import { registerSchemaResource } from './resources/schema.js';
 import { registerAnalyzeTextPrompt } from './prompts/analyze-text.js';
 import { registerDomainExpertPrompt } from './prompts/domain-expert.js';
+import { VERSION } from './utils/version.js';
 
 // Parse CLI arguments
 let pluginsDir: string | undefined;
@@ -39,7 +40,7 @@ const descriptors = descriptorRegistry.getAll();
 const server = new McpServer(
   {
     name: '@run-iq/mcp-server',
-    version: '0.1.0',
+    version: VERSION,
   },
   {
     capabilities: {
