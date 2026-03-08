@@ -1,6 +1,10 @@
 import { readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { createRequire } from 'node:module';
 import type { PluginBundle } from '@run-iq/plugin-sdk';
+
+const require = createRequire(import.meta.url);
 
 export async function loadPluginsFromDir(dir: string): Promise<PluginBundle[]> {
   const bundles: PluginBundle[] = [];
@@ -34,7 +38,8 @@ export async function loadNpmPlugins(packageNames: string[]): Promise<PluginBund
 
   for (const pkgName of packageNames) {
     try {
-      const mod = await import(pkgName);
+      const resolvedPath = require.resolve(pkgName, { paths: [process.cwd()] });
+      const mod = await import(pathToFileURL(resolvedPath).href);
       const bundle = (mod['default'] ?? mod) as Record<string, unknown>;
 
       if (

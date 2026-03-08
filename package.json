@@ -1,12 +1,13 @@
 {
   "name": "@run-iq/mcp-server",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "MCP server exposing the PPE engine to LLMs via stdio",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "run-iq-mcp": "./dist/index.js"
+    "run-iq-mcp": "./dist/index.js",
+    "mcp-server": "./dist/index.js"
   },
   "exports": {
     ".": {
