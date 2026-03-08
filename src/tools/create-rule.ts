@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { hashParams } from '@run-iq/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PluginDescriptor } from '@run-iq/plugin-sdk';
 import { buildCreateRuleSchema } from './schema-builder.js';
@@ -18,14 +18,14 @@ export function registerCreateRuleTool(
     schema,
     (args: Record<string, unknown>) => {
       const params = args['params'] as Record<string, unknown>;
-      const checksum = createHash('sha256').update(JSON.stringify(params)).digest('hex');
+      const checksum = hashParams(params);
 
       const rule: Record<string, unknown> = {
         id: args['id'],
         version: 1,
         model: args['model'],
         params,
-        priority: (args['priority'] as number | undefined) ?? 1000,
+        priority: args['priority'],
         effectiveFrom: args['effectiveFrom'],
         effectiveUntil: args['effectiveUntil'] ?? null,
         tags: (args['tags'] as string[] | undefined) ?? [],

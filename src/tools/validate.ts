@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { hashParams } from '@run-iq/core';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
@@ -55,7 +55,7 @@ export function registerValidateRulesTool(
         const errors: string[] = [];
 
         // Checksum verification
-        const computed = createHash('sha256').update(JSON.stringify(rule.params)).digest('hex');
+        const computed = hashParams(rule.params);
         if (computed !== rule.checksum) {
           errors.push(`Checksum mismatch: expected ${computed}, got ${rule.checksum}`);
         }

@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { hashParams } from '@run-iq/core';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
@@ -24,7 +24,7 @@ export function registerInspectRuleTool(
       const checksum = typeof rule['checksum'] === 'string' ? rule['checksum'] : '';
 
       // Checksum match
-      const computed = createHash('sha256').update(JSON.stringify(params)).digest('hex');
+      const computed = hashParams(params);
       const checksumMatch = computed === checksum;
 
       // Model found
