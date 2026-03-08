@@ -43,22 +43,7 @@ export function registerListModelsTool(
       }
 
       return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(
-              {
-                models: result,
-                debug: {
-                  executable: process.argv[1],
-                  cwd: process.cwd(),
-                },
-              },
-              null,
-              2,
-            ),
-          },
-        ],
+        content: [{ type: 'text', text: JSON.stringify({ models: result }, null, 2) }],
       };
     },
   );
