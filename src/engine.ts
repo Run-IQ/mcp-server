@@ -36,12 +36,14 @@ export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
   });
 
   // Build model map from plugins that expose a models property (BasePlugin pattern)
-  const models = new Map<string, CalculationModel>();
+  const models = new Map<string, CalculationModel & { pluginName?: string }>();
   for (const plugin of allPlugins) {
-    const pluginWithModels = plugin as { models?: CalculationModel[] };
+    const pluginWithModels = plugin as { name: string; models?: CalculationModel[] };
     if (Array.isArray(pluginWithModels.models)) {
       for (const model of pluginWithModels.models) {
-        models.set(model.name, model);
+        // Tag model with source plugin name for identification
+        const modelWithPlugin = Object.assign(model, { pluginName: pluginWithModels.name });
+        models.set(modelWithPlugin.name, modelWithPlugin);
       }
     }
   }

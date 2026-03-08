@@ -4,16 +4,17 @@ import type { CalculationModel } from '@run-iq/core';
 interface ModelInfo {
   name: string;
   version: string;
+  plugin?: string;
   paramsSchema: Record<string, string>;
 }
 
 export function registerListModelsTool(
   server: McpServer,
-  models: ReadonlyMap<string, CalculationModel>,
+  models: ReadonlyMap<string, CalculationModel & { pluginName?: string }>,
 ): void {
   server.tool(
     'list_models',
-    'List all available calculation models with their parameter schemas. Shows model name, version, and expected parameters.',
+    'List all available calculation models with their parameter schemas. Shows model name, version, source plugin, and expected parameters.',
     {},
     () => {
       const result: ModelInfo[] = [];
@@ -36,6 +37,7 @@ export function registerListModelsTool(
         result.push({
           name: model.name,
           version: model.version,
+          plugin: model.pluginName,
           paramsSchema,
         });
       }
