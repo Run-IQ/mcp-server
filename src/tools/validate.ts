@@ -1,4 +1,4 @@
-import { hashParams } from '@run-iq/core';
+import { computeRuleChecksum } from '@run-iq/core';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
@@ -10,7 +10,7 @@ const RuleSchema = z.object({
   version: z.number(),
   model: z.string(),
   params: z.unknown(),
-  priority: z.number().optional(),
+  priority: z.number(),
   effectiveFrom: z.string(),
   effectiveUntil: z.string().nullable(),
   tags: z.array(z.string()),
@@ -55,7 +55,7 @@ export function registerValidateRulesTool(
         const errors: string[] = [];
 
         // Checksum verification
-        const computed = hashParams(rule.params);
+        const computed = computeRuleChecksum(rule as any);
         if (computed !== rule.checksum) {
           errors.push(`Checksum mismatch: expected ${computed}, got ${rule.checksum}`);
         }

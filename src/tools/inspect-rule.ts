@@ -1,4 +1,4 @@
-import { hashParams } from '@run-iq/core';
+import { computeRuleChecksum } from '@run-iq/core';
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CalculationModel } from '@run-iq/core';
@@ -24,7 +24,7 @@ export function registerInspectRuleTool(
       const checksum = typeof rule['checksum'] === 'string' ? rule['checksum'] : '';
 
       // Checksum match
-      const computed = hashParams(params);
+      const computed = computeRuleChecksum(rule as any);
       const checksumMatch = computed === checksum;
 
       // Model found

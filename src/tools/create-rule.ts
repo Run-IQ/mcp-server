@@ -1,4 +1,4 @@
-import { hashParams } from '@run-iq/core';
+import { computeRuleChecksum } from '@run-iq/core';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PluginDescriptor } from '@run-iq/plugin-sdk';
 import { buildCreateRuleSchema } from './schema-builder.js';
@@ -20,23 +20,24 @@ export function registerCreateRuleTool(
     (rawArgs: Record<string, unknown>) => {
       const args = sanitizeMcpInput(rawArgs);
       const params = args['params'] as Record<string, unknown>;
-      const checksum = hashParams(params);
 
       const rule: Record<string, unknown> = {
         id: args['id'],
         version: 1,
-        model: args['model'],
+        model: args['model'] as string,
         params,
-        priority: args['priority'],
+        priority: (args['priority'] as number) ?? 1000,
         effectiveFrom: args['effectiveFrom'],
         effectiveUntil: args['effectiveUntil'] ?? null,
         tags: (args['tags'] as string[] | undefined) ?? [],
-        checksum,
       };
 
       if (args['condition']) {
         rule['condition'] = args['condition'];
       }
+
+      // Compute full integrity checksum
+      rule['checksum'] = computeRuleChecksum(rule as any);
 
       // Add plugin extension fields
       for (const field of extensionFields) {
