@@ -4,7 +4,7 @@ import type { CalculationModel } from '@run-iq/core';
 interface ModelInfo {
   name: string;
   version: string;
-  plugin?: string;
+  plugin?: string | undefined;
   paramsSchema: Record<string, string>;
 }
 

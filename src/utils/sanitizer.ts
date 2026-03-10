@@ -1,9 +1,13 @@
 
+/** Keys that must be blocked to prevent prototype pollution attacks. */
+const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+
 /**
- * Recursively cleans strings in an object, removing double escaping 
+ * Recursively cleans strings in an object, removing double escaping
  * (e.g. '"value"' -> 'value') often caused by some MCP clients.
+ * Also blocks prototype-pollution keys.
  */
-export function sanitizeMcpInput(obj: any): any {
+export function sanitizeMcpInput(obj: unknown): unknown {
   if (obj === null || obj === undefined) return obj;
 
   if (typeof obj === 'string') {
@@ -19,10 +23,17 @@ export function sanitizeMcpInput(obj: any): any {
   }
 
   if (typeof obj === 'object') {
-    const sanitized: Record<string, any> = {};
-    for (const [key, value] of Object.entries(obj)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj as Record<string, unknown>)) {
+      // Block prototype pollution keys
+      if (BLOCKED_KEYS.has(key)) continue;
+
       // Also sanitize keys if they are escaped
       const cleanKey = key.startsWith('"') && key.endsWith('"') ? key.slice(1, -1) : key;
+
+      // Block cleaned keys as well
+      if (BLOCKED_KEYS.has(cleanKey)) continue;
+
       sanitized[cleanKey] = sanitizeMcpInput(value);
     }
     return sanitized;

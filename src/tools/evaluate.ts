@@ -29,15 +29,16 @@ export function registerEvaluateTool(server: McpServer, engine: PPEEngine): void
     },
     async (args) => {
       try {
-        const sanitizedRules = sanitizeMcpInput(args.rules);
+        // justification: sanitizeMcpInput returns unknown but preserves array/object shape
+        const sanitizedRules = sanitizeMcpInput(args.rules) as Record<string, unknown>[];
         const rules = hydrateRules(sanitizedRules);
 
         const input = {
-          data: sanitizeMcpInput(args.input.data),
+          data: sanitizeMcpInput(args.input.data) as Record<string, unknown>,
           requestId: args.input.requestId,
           meta: {
             ...args.input.meta,
-            context: args.input.meta.context ? sanitizeMcpInput(args.input.meta.context) : undefined,
+            context: args.input.meta.context ? sanitizeMcpInput(args.input.meta.context) as Record<string, unknown> : undefined,
             effectiveDate: args.input.meta.effectiveDate
               ? new Date(args.input.meta.effectiveDate)
               : undefined,

@@ -28,7 +28,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
     "@run-iq/core": "^0.2.5",
-    "@run-iq/plugin-fiscal": "^0.2.13",
     "@run-iq/plugin-sdk": "^0.2.4",
     "zod": "^3.23.0"
   },

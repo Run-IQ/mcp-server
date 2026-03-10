@@ -3,10 +3,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createEngine } from '../../src/engine.js';
 import { registerSchemaResource } from '../../src/resources/schema.js';
 import { readResource } from '../helpers.js';
+import { mockBundle } from '../mocks.js';
 
 describe('schema://rules resource', () => {
   it('returns complete rule schema documentation', async () => {
-    const { models, descriptorRegistry } = createEngine();
+    const { models, descriptorRegistry } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { resources: {} } },
@@ -21,15 +22,13 @@ describe('schema://rules resource', () => {
 
     // Plugin extensions
     expect(text).toContain('Plugin Extension Fields');
-    expect(text).toContain('jurisdiction');
-    expect(text).toContain('NATIONAL');
-    expect(text).toContain('scope');
-    expect(text).toContain('country');
-    expect(text).toContain('category');
+    expect(text).toContain('region');
+    expect(text).toContain('NORTH');
+    expect(text).toContain('sector');
 
     // Models
-    expect(text).toContain('FLAT_RATE');
-    expect(text).toContain('PROGRESSIVE_BRACKET');
+    expect(text).toContain('MOCK_RATE');
+    expect(text).toContain('MOCK_DOUBLE');
 
     // Input fields
     expect(text).toContain('Input Data Fields');
@@ -40,6 +39,6 @@ describe('schema://rules resource', () => {
 
     // Examples
     expect(text).toContain('Complete Rule Examples');
-    expect(text).toContain('VAT / TVA');
+    expect(text).toContain('Basic rate calculation');
   });
 });

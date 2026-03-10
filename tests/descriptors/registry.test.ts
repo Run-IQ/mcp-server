@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DescriptorRegistry } from '../../src/descriptors/registry.js';
-import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
+import { mockDescriptor } from '../mocks.js';
 
 describe('DescriptorRegistry', () => {
   it('starts empty', () => {
@@ -11,31 +11,29 @@ describe('DescriptorRegistry', () => {
 
   it('registers and retrieves descriptors', () => {
     const registry = new DescriptorRegistry();
-    registry.register(fiscalDescriptor);
+    registry.register(mockDescriptor);
 
     expect(registry.isEmpty()).toBe(false);
     expect(registry.getAll()).toHaveLength(1);
-    expect(registry.getAll()[0]!.name).toBe('@run-iq/plugin-fiscal');
+    expect(registry.getAll()[0]!.name).toBe('mock-plugin');
   });
 
   it('aggregates rule extensions', () => {
     const registry = new DescriptorRegistry();
-    registry.register(fiscalDescriptor);
+    registry.register(mockDescriptor);
 
     const extensions = registry.getRuleExtensions();
     const names = extensions.map((e) => e.name);
 
-    expect(names).toContain('jurisdiction');
-    expect(names).toContain('scope');
-    expect(names).toContain('country');
-    expect(names).toContain('category');
+    expect(names).toContain('region');
+    expect(names).toContain('sector');
   });
 
   it('aggregates input fields with dedup', () => {
     const registry = new DescriptorRegistry();
-    registry.register(fiscalDescriptor);
+    registry.register(mockDescriptor);
     registry.register({
-      ...fiscalDescriptor,
+      ...mockDescriptor,
       name: 'second-plugin',
       inputFields: [
         { name: 'revenue', type: 'number', description: 'duplicate' },
@@ -53,7 +51,7 @@ describe('DescriptorRegistry', () => {
 
   it('aggregates examples from all descriptors', () => {
     const registry = new DescriptorRegistry();
-    registry.register(fiscalDescriptor);
+    registry.register(mockDescriptor);
 
     const examples = registry.getExamples();
     expect(examples.length).toBeGreaterThan(0);

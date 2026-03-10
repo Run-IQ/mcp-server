@@ -6,19 +6,14 @@ export function registerCreateChecksumTool(server: McpServer): void {
   server.tool(
     'create_checksum',
     'Compute SHA-256 checksum for parameters or a full rule object.',
-    { 
+    {
       params: z.record(z.unknown()).optional().describe('Parameters to hash'),
-      rule: z.object({
-        model: z.string(),
-        params: z.record(z.unknown()),
-        condition: z.unknown().optional(),
-        priority: z.number()
-      }).optional().describe('Full rule object to hash for total integrity')
+      rule: z.record(z.unknown()).optional().describe('Full rule object to compute checksum for (checksum field is excluded from hash)')
     },
     (args) => {
       let checksum: string;
       if (args.rule) {
-        checksum = computeRuleChecksum(args.rule as any);
+        checksum = computeRuleChecksum(args.rule);
       } else if (args.params) {
         checksum = hashParams(args.params);
       } else {

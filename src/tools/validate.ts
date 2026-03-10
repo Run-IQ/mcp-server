@@ -54,8 +54,8 @@ export function registerValidateRulesTool(
         const rule = parsed.data;
         const errors: string[] = [];
 
-        // Checksum verification
-        const computed = computeRuleChecksum(rule as any);
+        // Checksum verification — pass full raw rule, computeRuleChecksum excludes checksum internally
+        const computed = computeRuleChecksum(raw);
         if (computed !== rule.checksum) {
           errors.push(`Checksum mismatch: expected ${computed}, got ${rule.checksum}`);
         }

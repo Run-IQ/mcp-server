@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fiscalDescriptor } from '@run-iq/plugin-fiscal';
+import { mockDescriptor } from '../mocks.js';
 import {
   buildCreateRuleSchema,
   buildValidateExtensionErrors,
@@ -15,51 +15,43 @@ describe('buildCreateRuleSchema', () => {
   });
 
   it('adds plugin extension fields', () => {
-    const schema = buildCreateRuleSchema([fiscalDescriptor]);
-    expect(schema['jurisdiction']).toBeDefined();
-    expect(schema['scope']).toBeDefined();
-    expect(schema['country']).toBeDefined();
-    expect(schema['category']).toBeDefined();
+    const schema = buildCreateRuleSchema([mockDescriptor]);
+    expect(schema['region']).toBeDefined();
+    expect(schema['sector']).toBeDefined();
   });
 
   it('does not add extensions when no descriptors', () => {
     const schema = buildCreateRuleSchema([]);
-    expect(schema['jurisdiction']).toBeUndefined();
-    expect(schema['scope']).toBeUndefined();
+    expect(schema['region']).toBeUndefined();
+    expect(schema['sector']).toBeUndefined();
   });
 });
 
 describe('buildValidateExtensionErrors', () => {
-  it('returns no errors for a valid fiscal rule', () => {
+  it('returns no errors for a valid rule', () => {
     const rule = {
-      jurisdiction: 'NATIONAL',
-      scope: 'GLOBAL',
-      country: 'TG',
-      category: 'TVA',
+      region: 'NORTH',
+      sector: 'PUBLIC',
     };
-    const errors = buildValidateExtensionErrors(rule, [fiscalDescriptor]);
+    const errors = buildValidateExtensionErrors(rule, [mockDescriptor]);
     expect(errors).toHaveLength(0);
   });
 
   it('detects missing required fields', () => {
-    const errors = buildValidateExtensionErrors({}, [fiscalDescriptor]);
+    const errors = buildValidateExtensionErrors({}, [mockDescriptor]);
     expect(errors.length).toBeGreaterThan(0);
-    expect(errors.some((e) => e.includes('jurisdiction'))).toBe(true);
-    expect(errors.some((e) => e.includes('scope'))).toBe(true);
-    expect(errors.some((e) => e.includes('country'))).toBe(true);
-    expect(errors.some((e) => e.includes('category'))).toBe(true);
+    expect(errors.some((e) => e.includes('region'))).toBe(true);
+    expect(errors.some((e) => e.includes('sector'))).toBe(true);
   });
 
   it('detects invalid enum values', () => {
     const rule = {
-      jurisdiction: 'GALACTIC',
-      scope: 'GLOBAL',
-      country: 'TG',
-      category: 'TVA',
+      region: 'GALACTIC',
+      sector: 'PUBLIC',
     };
-    const errors = buildValidateExtensionErrors(rule, [fiscalDescriptor]);
+    const errors = buildValidateExtensionErrors(rule, [mockDescriptor]);
     expect(errors.length).toBe(1);
-    expect(errors[0]).toContain('NATIONAL');
+    expect(errors[0]).toContain('NORTH');
   });
 
   it('returns no errors when no descriptors', () => {

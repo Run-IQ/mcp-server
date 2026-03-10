@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { PPEEngine } from '@run-iq/core';
 import { hydrateRules } from '@run-iq/core';
+import { sanitizeMcpInput } from '../utils/sanitizer.js';
 
 const ScenarioSchema = z.object({
   label: z.string().describe('Human-readable scenario label'),
@@ -30,15 +31,22 @@ export function registerSimulateTool(server: McpServer, engine: PPEEngine): void
     },
     async (args) => {
       try {
-        const rules = hydrateRules(args.rules);
+        const sanitizedRules = sanitizeMcpInput(args.rules) as Record<string, unknown>[];
+        const rules = hydrateRules(sanitizedRules);
 
         const results = [];
         for (const scenario of args.scenarios) {
+          const sanitizedData = sanitizeMcpInput(scenario.input.data) as Record<string, unknown>;
+          const sanitizedContext = scenario.input.meta.context
+            ? (sanitizeMcpInput(scenario.input.meta.context) as Record<string, unknown>)
+            : undefined;
+
           const input = {
-            data: scenario.input.data,
+            data: sanitizedData,
             requestId: scenario.input.requestId,
             meta: {
               ...scenario.input.meta,
+              context: sanitizedContext,
               effectiveDate: scenario.input.meta.effectiveDate
                 ? new Date(scenario.input.meta.effectiveDate)
                 : undefined,

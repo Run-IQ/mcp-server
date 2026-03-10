@@ -1,6 +1,6 @@
-import { createHash } from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { hashParams } from '@run-iq/core';
 import { registerCreateChecksumTool } from '../../src/tools/create-checksum.js';
 import { callTool } from '../helpers.js';
 
@@ -11,7 +11,7 @@ describe('create_checksum tool', () => {
 
     const params = { rate: 0.18, base: 'revenue' };
     const result = await callTool(server, 'create_checksum', { params });
-    const expected = createHash('sha256').update(JSON.stringify(params)).digest('hex');
+    const expected = hashParams(params);
 
     expect(result.checksum).toBe(expected);
   });

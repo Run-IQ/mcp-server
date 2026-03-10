@@ -1,4 +1,4 @@
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
@@ -9,6 +9,9 @@ import type { PluginBundle } from '@run-iq/plugin-sdk';
 
 const require = createRequire(import.meta.url);
 const AUTO_PLUGINS_DIR = resolve(homedir(), '.run-iq', 'mcp-plugins');
+
+/** Only packages matching this pattern can be auto-installed. */
+const ALLOWED_PKG_PATTERN = /^@run-iq\//;
 
 /**
  * Loads all plugin bundles from a directory.
@@ -46,10 +49,10 @@ export async function loadNpmPlugins(packageNames: string[]): Promise<PluginBund
       if (bundle) {
         bundles.push(bundle);
       } else {
-        console.error(`[PluginLoader] Invalid PluginBundle in package: ${pkgName}`);
+        process.stderr.write(`[PluginLoader] Invalid PluginBundle in package: ${pkgName}\n`);
       }
     } catch (err) {
-      console.error(`[PluginLoader] Failed to load NPM plugin "${pkgName}":`, err instanceof Error ? err.message : err);
+      process.stderr.write(`[PluginLoader] Failed to load NPM plugin "${pkgName}": ${err instanceof Error ? err.message : String(err)}\n`);
     }
   }
 
@@ -74,11 +77,17 @@ async function resolveOrInstallPlugin(pkgName: string): Promise<string> {
     /* Not found in auto-plugins dir */
   }
 
-  // 3. Install dynamically
+  // 3. Install dynamically — only @run-iq/* packages allowed
+  if (!ALLOWED_PKG_PATTERN.test(pkgName)) {
+    throw new Error(
+      `[PluginLoader] Package "${pkgName}" is not allowed. Only @run-iq/* packages can be auto-installed.`,
+    );
+  }
+
   ensurePluginsDir();
-  console.log(`[PluginLoader] Installing ${pkgName} dynamically...`);
-  
-  execSync(`npm install ${pkgName} --no-save`, {
+  process.stderr.write(`[PluginLoader] Installing ${pkgName} dynamically...\n`);
+
+  execFileSync('npm', ['install', pkgName, '--no-save'], {
     cwd: AUTO_PLUGINS_DIR,
     stdio: 'inherit',
   });
@@ -105,30 +114,38 @@ function ensurePluginsDir(): void {
 async function importBundle(url: string): Promise<PluginBundle | null> {
   try {
     const mod = await import(url);
-    let bundle = (mod.default ?? mod) as any;
+    let bundle: unknown = mod.default ?? mod;
 
     // Handle bundles nested under a 'bundle' property (common in some build setups)
-    if (!bundle.plugin && bundle.bundle?.plugin) {
-      bundle = bundle.bundle;
+    if (isRecord(bundle) && !bundle['plugin'] && isRecord(bundle['bundle']) && bundle['bundle']['plugin']) {
+      bundle = bundle['bundle'];
     }
 
     if (isValidBundle(bundle)) {
-      return bundle as PluginBundle;
+      return bundle;
     }
   } catch (err) {
-    console.error(`[PluginLoader] Import error for ${url}:`, err);
+    process.stderr.write(`[PluginLoader] Import error for ${url}: ${err instanceof Error ? err.message : String(err)}\n`);
   }
   return null;
 }
 
 /**
- * Validates that an object conforms to the PluginBundle interface.
+ * Type guard: checks whether a value is a non-null record.
  */
-function isValidBundle(obj: any): boolean {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+
+/**
+ * Type guard: validates that an object conforms to the PluginBundle interface.
+ */
+function isValidBundle(obj: unknown): obj is PluginBundle {
   return (
-    obj &&
-    typeof obj === 'object' &&
-    typeof obj.plugin === 'object' &&
-    typeof obj.descriptor === 'object'
+    isRecord(obj) &&
+    typeof obj['plugin'] === 'object' &&
+    obj['plugin'] !== null &&
+    typeof obj['descriptor'] === 'object' &&
+    obj['descriptor'] !== null
   );
 }

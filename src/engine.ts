@@ -38,11 +38,19 @@ export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
   // Build model map from plugins that expose a models property (BasePlugin pattern)
   const models = new Map<string, CalculationModel & { pluginName?: string }>();
   for (const plugin of allPlugins) {
+    // justification: BasePlugin exposes a models array, but PPEPlugin interface doesn't declare it
     const pluginWithModels = plugin as { name: string; models?: CalculationModel[] };
     if (Array.isArray(pluginWithModels.models)) {
       for (const model of pluginWithModels.models) {
-        // Tag model with source plugin name for identification
-        const modelWithPlugin = Object.assign(model, { pluginName: pluginWithModels.name });
+        // Tag model with source plugin name — use defineProperty to preserve prototype chain
+        // justification: spread strips prototype methods (validateParams, calculate), so we attach pluginName directly
+        const modelWithPlugin = model as CalculationModel & { pluginName?: string };
+        Object.defineProperty(modelWithPlugin, 'pluginName', {
+          value: pluginWithModels.name,
+          enumerable: true,
+          writable: false,
+          configurable: false,
+        });
         models.set(modelWithPlugin.name, modelWithPlugin);
       }
     }

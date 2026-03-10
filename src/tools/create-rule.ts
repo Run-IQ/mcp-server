@@ -18,7 +18,8 @@ export function registerCreateRuleTool(
     'Generate a valid Run-IQ Rule JSON object with auto-computed SHA-256 checksum. Includes plugin-specific fields based on loaded plugins.',
     schema,
     (rawArgs: Record<string, unknown>) => {
-      const args = sanitizeMcpInput(rawArgs);
+      // justification: sanitizeMcpInput returns unknown but always preserves object shape from rawArgs
+      const args = sanitizeMcpInput(rawArgs) as Record<string, unknown>;
       const params = args['params'] as Record<string, unknown>;
 
       const rule: Record<string, unknown> = {
@@ -36,15 +37,15 @@ export function registerCreateRuleTool(
         rule['condition'] = args['condition'];
       }
 
-      // Compute full integrity checksum
-      rule['checksum'] = computeRuleChecksum(rule as any);
-
-      // Add plugin extension fields
+      // Add plugin extension fields BEFORE checksum
       for (const field of extensionFields) {
         if (args[field] !== undefined) {
           rule[field] = args[field];
         }
       }
+
+      // Compute checksum from the complete rule (all fields included)
+      rule['checksum'] = computeRuleChecksum(rule);
 
       return {
         content: [{ type: 'text', text: JSON.stringify({ rule }, null, 2) }],

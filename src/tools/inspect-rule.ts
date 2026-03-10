@@ -23,8 +23,8 @@ export function registerInspectRuleTool(
       const params = rule['params'];
       const checksum = typeof rule['checksum'] === 'string' ? rule['checksum'] : '';
 
-      // Checksum match
-      const computed = computeRuleChecksum(rule as any);
+      // Checksum match — pass full rule, computeRuleChecksum excludes checksum internally
+      const computed = computeRuleChecksum(rule);
       const checksumMatch = computed === checksum;
 
       // Model found
