@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { hashParams } from '@run-iq/core';
 import { registerCreateChecksumTool } from '../../src/tools/create-checksum.js';
-import { callTool } from '../helpers.js';
+import { callTool, callToolRaw } from '../helpers.js';
 
 describe('create_checksum tool', () => {
   it('computes SHA-256 of params', async () => {
@@ -28,5 +28,17 @@ describe('create_checksum tool', () => {
     });
 
     expect(r1.checksum).not.toBe(r2.checksum);
+  });
+
+  it('returns error when neither params nor rule is provided', async () => {
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerCreateChecksumTool(server);
+
+    const result = await callToolRaw(server, 'create_checksum', {});
+
+    expect(result.isError).toBe(true);
+    const text = result.content[0]?.text ?? '';
+    expect(text).toContain('params');
+    expect(text).toContain('rule');
   });
 });
