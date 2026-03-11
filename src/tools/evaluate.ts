@@ -9,7 +9,7 @@ export function registerEvaluateTool(server: McpServer, engine: PPEEngine): void
     'evaluate',
     'Evaluate Run-IQ rules against input data in dry-run mode. Returns the computed value, breakdown per rule, applied/skipped rules, and execution trace.',
     {
-      rules: z.array(z.record(z.unknown())).describe('Array of Rule JSON objects'),
+      rules: z.array(z.record(z.unknown())).max(100).describe('Array of Rule JSON objects'),
       input: z
         .object({
           data: z.record(z.unknown()).describe('Input data for evaluation'),

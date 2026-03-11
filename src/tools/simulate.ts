@@ -26,8 +26,9 @@ export function registerSimulateTool(server: McpServer, engine: PPEEngine): void
     {
       rules: z
         .array(z.record(z.unknown()))
+        .max(100)
         .describe('Array of Rule JSON objects (shared across all scenarios)'),
-      scenarios: z.array(ScenarioSchema).min(1).describe('Array of scenarios to compare'),
+      scenarios: z.array(ScenarioSchema).min(1).max(20).describe('Array of scenarios to compare'),
     },
     async (args) => {
       try {
