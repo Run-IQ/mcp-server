@@ -82,3 +82,17 @@ registerDomainExpertPrompt(server, descriptorRegistry);
 // Start stdio transport
 const transport = new StdioServerTransport();
 await server.connect(transport);
+
+// Graceful shutdown handlers
+async function shutdown(): Promise<void> {
+  try {
+    await server.close();
+    await transport.close();
+  } catch {
+    // Best-effort cleanup — ignore errors during shutdown
+  }
+  process.exit(0);
+}
+
+process.on('SIGINT', () => void shutdown());
+process.on('SIGTERM', () => void shutdown());
