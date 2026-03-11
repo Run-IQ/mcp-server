@@ -141,11 +141,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * Type guard: validates that an object conforms to the PluginBundle interface.
  */
 function isValidBundle(obj: unknown): obj is PluginBundle {
-  return (
-    isRecord(obj) &&
-    typeof obj['plugin'] === 'object' &&
-    obj['plugin'] !== null &&
-    typeof obj['descriptor'] === 'object' &&
-    obj['descriptor'] !== null
-  );
+  if (!isRecord(obj)) return false;
+  const plugin = obj['plugin'];
+  const descriptor = obj['descriptor'];
+  if (!isRecord(plugin) || !isRecord(descriptor)) return false;
+  if (typeof plugin['name'] !== 'string' || plugin['name'].length === 0) return false;
+  if (typeof plugin['version'] !== 'string') return false;
+  if (typeof descriptor['name'] !== 'string' || descriptor['name'].length === 0) return false;
+  return true;
 }
