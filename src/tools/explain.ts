@@ -91,7 +91,7 @@ export function registerExplainResultTool(server: McpServer): void {
       const explanation = lines.join('\n');
 
       return {
-        content: [{ type: 'text', text: JSON.stringify({ explanation }, null, 2) }],
+        content: [{ type: 'text', text: explanation }],
       };
     },
   );
