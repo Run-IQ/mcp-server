@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       '@run-iq/core': path.resolve(__dirname, '../core/src/index.ts'),
       '@run-iq/plugin-sdk': path.resolve(__dirname, '../plugin-sdk/src/index.ts'),
+      '@run-iq/plugin-fiscal': path.resolve(__dirname, '../plugin-fiscal/src/index.ts'),
     },
     coverage: {
       provider: 'v8',
