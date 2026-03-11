@@ -7,12 +7,12 @@ import { mockBundle } from '../mocks.js';
 
 describe('schema://rules resource', () => {
   it('returns complete rule schema documentation', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { resources: {} } },
     );
-    registerSchemaResource(server, models, descriptorRegistry);
+    registerSchemaResource(server, models, descriptorRegistry, dsls);
 
     const text = await readResource(server, 'schema://rules');
 
@@ -34,8 +34,9 @@ describe('schema://rules resource', () => {
     expect(text).toContain('Input Data Fields');
     expect(text).toContain('revenue');
 
-    // JSONLogic
-    expect(text).toContain('JSONLogic');
+    // DSL section only appears when DSLs are loaded (mock bundle has none)
+    // Models section is always present
+    expect(text).toContain('Available Calculation Models');
 
     // Examples
     expect(text).toContain('Complete Rule Examples');

@@ -73,10 +73,10 @@ registerSimulateTool(server, engine);
 // Resources
 registerModelsResource(server, models);
 registerPluginsResource(server, plugins, dsls, descriptorRegistry);
-registerSchemaResource(server, models, descriptorRegistry);
+registerSchemaResource(server, models, descriptorRegistry, dsls);
 
 // Prompts
-registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 registerDomainExpertPrompt(server, descriptorRegistry);
 
 // Start stdio transport

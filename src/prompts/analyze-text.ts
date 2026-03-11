@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CalculationModel } from '@run-iq/core';
+import type { CalculationModel, DSLEvaluator, DSLSyntaxDoc } from '@run-iq/core';
 import type { DescriptorRegistry } from '../descriptors/registry.js';
 
 function buildDomainLabel(registry: DescriptorRegistry): string {
@@ -12,9 +12,50 @@ function buildDomainLabel(registry: DescriptorRegistry): string {
 function buildModelDocs(models: ReadonlyMap<string, CalculationModel>): string {
   const lines: string[] = [];
   for (const [, model] of models) {
-    const validation = model.validateParams({});
-    const paramHints = validation.errors ? validation.errors.join('; ') : 'none';
-    lines.push(`- **${model.name}** (v${model.version}): ${paramHints}`);
+    lines.push(`### ${model.name} (v${model.version})`);
+    if ('describeParams' in model && typeof model.describeParams === 'function') {
+      // justification: narrowed by 'in' check + typeof guard
+      const paramDocs = model.describeParams() as Record<string, { type: string; description?: string | undefined }>;
+      for (const [name, desc] of Object.entries(paramDocs)) {
+        lines.push(`- \`${name}\` (${desc.type}): ${desc.description ?? ''}`);
+      }
+    } else {
+      const validation = model.validateParams({});
+      const paramHints = validation.errors ? validation.errors.join('; ') : 'none';
+      lines.push(`- params: ${paramHints}`);
+    }
+    lines.push('');
+  }
+  return lines.join('\n');
+}
+
+function buildDSLDocs(dsls: readonly DSLEvaluator[]): string {
+  if (dsls.length === 0) return '';
+
+  const lines: string[] = ['\n## Available DSL Condition Syntax'];
+  for (const dsl of dsls) {
+    lines.push(`\n### ${dsl.dsl} (v${dsl.version})`);
+    if ('describeSyntax' in dsl && typeof dsl.describeSyntax === 'function') {
+      // justification: narrowed by 'in' check + typeof guard
+      const syntax = dsl.describeSyntax() as DSLSyntaxDoc;
+      lines.push(syntax.description);
+      lines.push(`\nFormat: \`${syntax.conditionFormat}\``);
+      lines.push('\n**Operators:**');
+      for (const op of syntax.operators) {
+        lines.push(`- \`${op.syntax}\` — ${op.description}`);
+      }
+      if (syntax.examples.length > 0) {
+        lines.push('\n**Examples:**');
+        for (const ex of syntax.examples) {
+          lines.push(`- ${ex.description}:`);
+          lines.push('```json');
+          lines.push(JSON.stringify({ dsl: dsl.dsl, value: ex.expression }, null, 2));
+          lines.push('```');
+        }
+      }
+    } else {
+      lines.push(`Format: \`{ "dsl": "${dsl.dsl}", "value": <expression> }\``);
+    }
   }
   return lines.join('\n');
 }
@@ -86,6 +127,7 @@ export function registerAnalyzeTextPrompt(
   server: McpServer,
   models: ReadonlyMap<string, CalculationModel>,
   registry: DescriptorRegistry,
+  dsls: readonly DSLEvaluator[],
 ): void {
   const domainLabel = buildDomainLabel(registry);
 
@@ -111,6 +153,7 @@ export function registerAnalyzeTextPrompt(
 ${buildModelDocs(models)}
 ${buildExtensionDocs(registry)}
 ${buildInputDocs(registry)}
+${buildDSLDocs(dsls)}
 ${buildGuidelinesSection(registry)}
 
 ## Rule Creation Workflow
@@ -120,11 +163,6 @@ ${buildGuidelinesSection(registry)}
 4. Use the \`create_rule\` tool — it knows ALL required fields for loaded plugins
 5. Use the \`validate_rules\` tool to verify your rules are valid
 6. Read \`schema://rules\` for the complete field reference if needed
-
-## JSONLogic Conditions
-\`\`\`json
-{ "dsl": "jsonlogic", "value": { ">=": [{ "var": "revenue" }, 100000] } }
-\`\`\`
 ${buildExampleDocs(registry)}
 ${args.country ? `\n## Target Country: ${args.country}\n` : ''}
 ## Source Text to Analyze

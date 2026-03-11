@@ -7,12 +7,12 @@ import { mockBundle } from '../mocks.js';
 
 describe('analyze-text prompt', () => {
   it('returns a user message containing the source text', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'TVA is 18% on revenue',
@@ -24,12 +24,12 @@ describe('analyze-text prompt', () => {
   });
 
   it('includes available calculation models in the prompt', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'Some regulation text',
@@ -41,12 +41,12 @@ describe('analyze-text prompt', () => {
   });
 
   it('includes plugin extension docs', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'Some text',
@@ -58,12 +58,12 @@ describe('analyze-text prompt', () => {
   });
 
   it('includes country when provided', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'Some text',
@@ -75,12 +75,12 @@ describe('analyze-text prompt', () => {
   });
 
   it('includes input field docs from descriptor', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'Tax regulation',
@@ -92,12 +92,12 @@ describe('analyze-text prompt', () => {
   });
 
   it('includes prompt guidelines from descriptor', async () => {
-    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
     const server = new McpServer(
       { name: 'test', version: '0.0.1' },
       { capabilities: { prompts: {} } },
     );
-    registerAnalyzeTextPrompt(server, models, descriptorRegistry);
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
 
     const result = await getPrompt(server, 'analyze-text', {
       source_text: 'Tax text',

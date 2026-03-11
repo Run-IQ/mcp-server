@@ -1,10 +1,11 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { CalculationModel } from '@run-iq/core';
+import type { CalculationModel, DSLEvaluator, DSLSyntaxDoc } from '@run-iq/core';
 import type { DescriptorRegistry } from '../descriptors/registry.js';
 
 function buildSchemaDocument(
   models: ReadonlyMap<string, CalculationModel>,
   registry: DescriptorRegistry,
+  dsls: readonly DSLEvaluator[],
 ): string {
   const lines: string[] = [];
 
@@ -64,11 +65,21 @@ function buildSchemaDocument(
     lines.push(`### ${model.name} (v${model.version})`);
     lines.push('');
 
-    const validation = model.validateParams({});
-    if (validation.errors) {
-      lines.push('**Required params:**');
-      for (const error of validation.errors) {
-        lines.push(`- ${error}`);
+    if ('describeParams' in model && typeof model.describeParams === 'function') {
+      // justification: narrowed by 'in' check + typeof guard
+      const paramDocs = model.describeParams() as Record<string, { type: string; description?: string | undefined }>;
+      lines.push('| Parameter | Type | Description |');
+      lines.push('|-----------|------|-------------|');
+      for (const [name, desc] of Object.entries(paramDocs)) {
+        lines.push(`| \`${name}\` | ${desc.type} | ${desc.description ?? ''} |`);
+      }
+    } else {
+      const validation = model.validateParams({});
+      if (validation.errors) {
+        lines.push('**Required params (inferred):**');
+        for (const error of validation.errors) {
+          lines.push(`- ${error}`);
+        }
       }
     }
     lines.push('');
@@ -92,22 +103,45 @@ function buildSchemaDocument(
     lines.push('');
   }
 
-  // JSONLogic DSL reference
-  lines.push('## JSONLogic Condition Syntax');
-  lines.push('');
-  lines.push('Conditions use the `jsonlogic` DSL. Format:');
-  lines.push('```json');
-  lines.push('{ "dsl": "jsonlogic", "value": <expression> }');
-  lines.push('```');
-  lines.push('');
-  lines.push('**Common operators:**');
-  lines.push('- `{">=": [{"var": "revenue"}, 1000000]}` - comparison');
-  lines.push('- `{"and": [expr1, expr2]}` - logical AND');
-  lines.push('- `{"or": [expr1, expr2]}` - logical OR');
-  lines.push('- `{"!": expr}` - logical NOT');
-  lines.push('- `{"in": ["value", {"var": "tags"}]}` - membership');
-  lines.push('- `{"==": [{"var": "type"}, "enterprise"]}` - equality');
-  lines.push('');
+  // DSL reference — dynamically generated from loaded DSLs
+  if (dsls.length > 0) {
+    lines.push('## Condition DSL Reference');
+    lines.push('');
+    lines.push('Conditions on rules use a DSL evaluator. Available DSLs:');
+    lines.push('');
+
+    for (const dsl of dsls) {
+      lines.push(`### ${dsl.dsl} (v${dsl.version})`);
+      lines.push('');
+
+      if ('describeSyntax' in dsl && typeof dsl.describeSyntax === 'function') {
+        // justification: narrowed by 'in' check + typeof guard
+        const syntax = dsl.describeSyntax() as DSLSyntaxDoc;
+        lines.push(syntax.description);
+        lines.push('');
+        lines.push('**Condition format:**');
+        lines.push('```');
+        lines.push(syntax.conditionFormat);
+        lines.push('```');
+        lines.push('');
+        lines.push('**Operators:**');
+        for (const op of syntax.operators) {
+          lines.push(`- \`${op.syntax}\` — ${op.description}`);
+        }
+        lines.push('');
+        if (syntax.examples.length > 0) {
+          lines.push('**Examples:**');
+          for (const ex of syntax.examples) {
+            lines.push(`- ${ex.description}: \`${JSON.stringify(ex.expression)}\``);
+          }
+          lines.push('');
+        }
+      } else {
+        lines.push(`Format: \`{ "dsl": "${dsl.dsl}", "value": <expression> }\``);
+        lines.push('');
+      }
+    }
+  }
 
   // Examples
   const examples = registry.getExamples();
@@ -143,6 +177,7 @@ export function registerSchemaResource(
   server: McpServer,
   models: ReadonlyMap<string, CalculationModel>,
   registry: DescriptorRegistry,
+  dsls: readonly DSLEvaluator[],
 ): void {
   server.resource(
     'rule-schema',
@@ -156,7 +191,7 @@ export function registerSchemaResource(
         {
           uri: 'schema://rules',
           mimeType: 'text/markdown',
-          text: buildSchemaDocument(models, registry),
+          text: buildSchemaDocument(models, registry, dsls),
         },
       ],
     }),
