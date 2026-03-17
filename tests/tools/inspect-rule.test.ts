@@ -82,4 +82,41 @@ describe('inspect_rule tool (plugin-aware)', () => {
     expect(result.isActive).toBe(false);
     expect(result.valid).toBe(false);
   });
+
+  it('uses optional effectiveDate for active-date checks', async () => {
+    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
+
+    // Rule is active from 2020-01-01 to 2020-06-01
+    const rule = makeRule({
+      effectiveFrom: '2020-01-01T00:00:00.000Z',
+      effectiveUntil: '2020-06-01T00:00:00.000Z',
+    });
+
+    // Check with a date inside the active window
+    const activeResult = await callTool(server, 'inspect_rule', {
+      rule,
+      effectiveDate: '2020-03-15T00:00:00.000Z',
+    });
+    expect(activeResult.isActive).toBe(true);
+  });
+
+  it('detects inactive rule via effectiveDate before effectiveFrom', async () => {
+    const { models, descriptorRegistry } = createEngine([mockBundle]);
+    const server = new McpServer({ name: 'test', version: '0.0.1' });
+    registerInspectRuleTool(server, models, descriptorRegistry.getAll());
+
+    const rule = makeRule({
+      effectiveFrom: '2025-01-01T00:00:00.000Z',
+      effectiveUntil: null,
+    });
+
+    // Check with a date before the rule is active
+    const result = await callTool(server, 'inspect_rule', {
+      rule,
+      effectiveDate: '2024-06-01T00:00:00.000Z',
+    });
+    expect(result.isActive).toBe(false);
+  });
 });

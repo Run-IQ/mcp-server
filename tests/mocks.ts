@@ -1,11 +1,20 @@
-import type { CalculationModel, ValidationResult, PPEPlugin, PluginContext, DSLEvaluator } from '@run-iq/core';
+import type {
+  CalculationModel,
+  ValidationResult,
+  PPEPlugin,
+  PluginContext,
+  DSLEvaluator,
+} from '@run-iq/core';
 import type { PluginBundle, PluginDescriptor } from '@run-iq/plugin-sdk';
 
 export class MockModel implements CalculationModel {
   readonly name: string;
   readonly version = '1.0.0';
 
-  constructor(name: string, private readonly factor: number = 1) {
+  constructor(
+    name: string,
+    private readonly factor: number = 1,
+  ) {
     this.name = name;
   }
 
@@ -39,10 +48,7 @@ export class MockPlugin implements PPEPlugin {
   readonly models: CalculationModel[];
 
   constructor(models?: CalculationModel[]) {
-    this.models = models ?? [
-      new MockModel('MOCK_RATE'),
-      new MockModel('MOCK_DOUBLE', 2),
-    ];
+    this.models = models ?? [new MockModel('MOCK_RATE'), new MockModel('MOCK_DOUBLE', 2)];
   }
 
   onInit(context: PluginContext): void {
@@ -51,7 +57,9 @@ export class MockPlugin implements PPEPlugin {
     }
   }
 
-  onError(): void { /* noop */ }
+  onError(): void {
+    /* noop */
+  }
 }
 
 export const mockDescriptor: PluginDescriptor = {
@@ -60,8 +68,20 @@ export const mockDescriptor: PluginDescriptor = {
   description: 'Mock plugin for testing the MCP server',
   domainLabel: 'mock',
   ruleExtensions: [
-    { name: 'region', type: 'string', required: true, enum: ['NORTH', 'SOUTH', 'EAST'], description: 'Target region' },
-    { name: 'sector', type: 'string', required: true, enum: ['PUBLIC', 'PRIVATE'], description: 'Economic sector' },
+    {
+      name: 'region',
+      type: 'string',
+      required: true,
+      enum: ['NORTH', 'SOUTH', 'EAST'],
+      description: 'Target region',
+    },
+    {
+      name: 'sector',
+      type: 'string',
+      required: true,
+      enum: ['PUBLIC', 'PRIVATE'],
+      description: 'Economic sector',
+    },
   ],
   inputFields: [
     { name: 'revenue', type: 'number', description: 'Total revenue' },
@@ -71,7 +91,12 @@ export const mockDescriptor: PluginDescriptor = {
     {
       title: 'Basic rate calculation',
       description: 'Apply 10% rate on revenue',
-      rule: { model: 'MOCK_RATE', params: { rate: 0.1, base: 'revenue' }, region: 'NORTH', sector: 'PUBLIC' },
+      rule: {
+        model: 'MOCK_RATE',
+        params: { rate: 0.1, base: 'revenue' },
+        region: 'NORTH',
+        sector: 'PUBLIC',
+      },
     },
   ],
   promptGuidelines: ['Use MOCK_RATE for simple percentage calculations.'],

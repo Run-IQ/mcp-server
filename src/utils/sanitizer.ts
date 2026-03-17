@@ -1,4 +1,3 @@
-
 /** Keys that must be blocked to prevent prototype pollution attacks. */
 const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 

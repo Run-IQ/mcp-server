@@ -33,7 +33,10 @@ export function registerValidateRulesTool(
     'validate_rules',
     'Validate the structure, checksum, model params, and plugin-specific fields of Run-IQ rules.',
     {
-      rules: z.array(z.record(z.unknown())).max(100).describe('Array of Rule JSON objects to validate'),
+      rules: z
+        .array(z.record(z.unknown()))
+        .max(100)
+        .describe('Array of Rule JSON objects to validate'),
     },
     (args) => {
       const entries: ValidationEntry[] = [];

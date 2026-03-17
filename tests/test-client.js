@@ -9,18 +9,15 @@ console.log('--- MCP Server Test ---');
 console.log('Plugins-Dir : ../my-plugins\n');
 
 // Launch MCP server with plugins-dir only (no hardcoded plugin)
-const server = spawn('node', [
-  SERVER_PATH,
-  '--plugins-dir', '../my-plugins',
-], {
-  stdio: ['pipe', 'pipe', 'inherit']
+const server = spawn('node', [SERVER_PATH, '--plugins-dir', '../my-plugins'], {
+  stdio: ['pipe', 'pipe', 'inherit'],
 });
 
 const listToolsRequest = {
   jsonrpc: '2.0',
   id: 1,
   method: 'tools/list',
-  params: {}
+  params: {},
 };
 
 // Send request to server via stdin
@@ -37,23 +34,23 @@ server.stdout.on('data', (data) => {
 
     if (response.id === 1 && response.result && response.result.tools) {
       console.log('--- Tools Detected ---');
-      response.result.tools.forEach(tool => console.log(`  - ${tool.name}`));
+      response.result.tools.forEach((tool) => console.log(`  - ${tool.name}`));
 
       // Ask for models to see if they are all there
       const listModelsRequest = {
         jsonrpc: '2.0',
         id: 2,
         method: 'tools/call',
-        params: { name: 'list_models', arguments: {} }
+        params: { name: 'list_models', arguments: {} },
       };
       server.stdin.write(JSON.stringify(listModelsRequest) + '\n');
     } else if (response.id === 2 && response.result && response.result.content) {
-        console.log('\n--- Models Found ---');
-        const content = response.result.content[0].text;
-        console.log(content);
+      console.log('\n--- Models Found ---');
+      const content = response.result.content[0].text;
+      console.log(content);
 
-        server.kill();
-        process.exit(0);
+      server.kill();
+      process.exit(0);
     }
   } catch (err) {
     console.error('Error:', err);

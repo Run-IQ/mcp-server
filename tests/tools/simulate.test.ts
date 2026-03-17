@@ -49,9 +49,13 @@ describe('simulate tool', () => {
     });
 
     expect(result.results).toHaveLength(2);
-    expect((result.results as Array<{ label: string; value: number }>)[0]!.label).toBe('Small business');
+    expect((result.results as Array<{ label: string; value: number }>)[0]!.label).toBe(
+      'Small business',
+    );
     expect((result.results as Array<{ label: string; value: number }>)[0]!.value).toBe(90000);
-    expect((result.results as Array<{ label: string; value: number }>)[1]!.label).toBe('Large business');
+    expect((result.results as Array<{ label: string; value: number }>)[1]!.label).toBe(
+      'Large business',
+    );
     expect((result.results as Array<{ label: string; value: number }>)[1]!.value).toBe(900000);
   });
 });

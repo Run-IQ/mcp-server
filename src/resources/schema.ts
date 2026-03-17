@@ -67,7 +67,10 @@ function buildSchemaDocument(
 
     if ('describeParams' in model && typeof model.describeParams === 'function') {
       // justification: narrowed by 'in' check + typeof guard
-      const paramDocs = model.describeParams() as Record<string, { type: string; description?: string | undefined }>;
+      const paramDocs = model.describeParams() as Record<
+        string,
+        { type: string; description?: string | undefined }
+      >;
       lines.push('| Parameter | Type | Description |');
       lines.push('|-----------|------|-------------|');
       for (const [name, desc] of Object.entries(paramDocs)) {

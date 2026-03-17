@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { loadPluginsFromDir, loadNpmPlugins } from '../../src/loader/plugin-loader.js';
@@ -8,7 +8,10 @@ import { loadPluginsFromDir, loadNpmPlugins } from '../../src/loader/plugin-load
  * Create a temporary directory with a unique name for each test.
  */
 function makeTmpDir(): string {
-  const dir = resolve(tmpdir(), `run-iq-loader-test-${Date.now()}-${Math.floor(Math.random() * 10000)}`);
+  const dir = resolve(
+    tmpdir(),
+    `run-iq-loader-test-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+  );
   mkdirSync(dir, { recursive: true });
   return dir;
 }
@@ -44,10 +47,7 @@ describe('loadPluginsFromDir', () => {
 
   it('skips js files that do not export a valid bundle', async () => {
     // Write a module that exports something that is NOT a valid PluginBundle
-    writeFileSync(
-      join(tmpDir, 'bad-plugin.mjs'),
-      'export default { notAPlugin: true };',
-    );
+    writeFileSync(join(tmpDir, 'bad-plugin.mjs'), 'export default { notAPlugin: true };');
 
     // Suppress stderr output during test
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
@@ -101,10 +101,7 @@ describe('isValidBundle (via loadPluginsFromDir)', () => {
   });
 
   it('rejects bundle with missing plugin property', async () => {
-    writeFileSync(
-      join(tmpDir, 'no-plugin.mjs'),
-      'export default { descriptor: { name: "x" } };',
-    );
+    writeFileSync(join(tmpDir, 'no-plugin.mjs'), 'export default { descriptor: { name: "x" } };');
 
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
     const result = await loadPluginsFromDir(tmpDir);

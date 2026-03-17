@@ -15,6 +15,10 @@ export function registerInspectRuleTool(
     'Analyze a single Run-IQ rule in detail: checksum, model, active dates, params, and plugin-specific fields.',
     {
       rule: z.record(z.unknown()).describe('A single Rule JSON object to inspect'),
+      effectiveDate: z
+        .string()
+        .optional()
+        .describe('ISO 8601 date to use for active-date checks (defaults to now)'),
     },
     (args) => {
       const rule = args.rule;
@@ -43,8 +47,8 @@ export function registerInspectRuleTool(
       // Plugin extension validation
       const extensionErrors = buildValidateExtensionErrors(rule, descriptors);
 
-      // Active date check
-      const now = new Date();
+      // Active date check — use provided effectiveDate or default to now
+      const now = args.effectiveDate ? new Date(args.effectiveDate) : new Date();
       const effectiveFrom =
         typeof rule['effectiveFrom'] === 'string' ? new Date(rule['effectiveFrom']) : null;
       const effectiveUntil =

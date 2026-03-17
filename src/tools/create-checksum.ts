@@ -8,7 +8,12 @@ export function registerCreateChecksumTool(server: McpServer): void {
     'Compute SHA-256 checksum for parameters or a full rule object.',
     {
       params: z.record(z.unknown()).optional().describe('Parameters to hash'),
-      rule: z.record(z.unknown()).optional().describe('Full rule object to compute checksum for (checksum field is excluded from hash)')
+      rule: z
+        .record(z.unknown())
+        .optional()
+        .describe(
+          'Full rule object to compute checksum for (checksum field is excluded from hash)',
+        ),
     },
     (args) => {
       let checksum: string;

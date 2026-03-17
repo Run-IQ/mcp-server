@@ -38,7 +38,9 @@ export function registerEvaluateTool(server: McpServer, engine: PPEEngine): void
           requestId: args.input.requestId,
           meta: {
             ...args.input.meta,
-            context: args.input.meta.context ? sanitizeMcpInput(args.input.meta.context) as Record<string, unknown> : undefined,
+            context: args.input.meta.context
+              ? (sanitizeMcpInput(args.input.meta.context) as Record<string, unknown>)
+              : undefined,
             effectiveDate: args.input.meta.effectiveDate
               ? new Date(args.input.meta.effectiveDate)
               : undefined,

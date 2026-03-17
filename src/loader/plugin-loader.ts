@@ -52,7 +52,9 @@ export async function loadNpmPlugins(packageNames: string[]): Promise<PluginBund
         process.stderr.write(`[PluginLoader] Invalid PluginBundle in package: ${pkgName}\n`);
       }
     } catch (err) {
-      process.stderr.write(`[PluginLoader] Failed to load NPM plugin "${pkgName}": ${err instanceof Error ? err.message : String(err)}\n`);
+      process.stderr.write(
+        `[PluginLoader] Failed to load NPM plugin "${pkgName}": ${err instanceof Error ? err.message : String(err)}\n`,
+      );
     }
   }
 
@@ -117,7 +119,12 @@ async function importBundle(url: string): Promise<PluginBundle | null> {
     let bundle: unknown = mod.default ?? mod;
 
     // Handle bundles nested under a 'bundle' property (common in some build setups)
-    if (isRecord(bundle) && !bundle['plugin'] && isRecord(bundle['bundle']) && bundle['bundle']['plugin']) {
+    if (
+      isRecord(bundle) &&
+      !bundle['plugin'] &&
+      isRecord(bundle['bundle']) &&
+      bundle['bundle']['plugin']
+    ) {
       bundle = bundle['bundle'];
     }
 
@@ -125,7 +132,9 @@ async function importBundle(url: string): Promise<PluginBundle | null> {
       return bundle;
     }
   } catch (err) {
-    process.stderr.write(`[PluginLoader] Import error for ${url}: ${err instanceof Error ? err.message : String(err)}\n`);
+    process.stderr.write(
+      `[PluginLoader] Import error for ${url}: ${err instanceof Error ? err.message : String(err)}\n`,
+    );
   }
   return null;
 }

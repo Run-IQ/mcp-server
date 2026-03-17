@@ -52,9 +52,11 @@ describe('createEngine', () => {
       name: 'custom-plugin',
       version: '1.0.0',
       description: 'Test',
+      domainLabel: 'custom',
       ruleExtensions: [],
       inputFields: [],
       examples: [],
+      promptGuidelines: [],
     };
     const ctx = createEngine([{ plugin: mockPlugin, descriptor: mockDescriptor }]);
 

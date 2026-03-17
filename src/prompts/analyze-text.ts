@@ -15,7 +15,10 @@ function buildModelDocs(models: ReadonlyMap<string, CalculationModel>): string {
     lines.push(`### ${model.name} (v${model.version})`);
     if ('describeParams' in model && typeof model.describeParams === 'function') {
       // justification: narrowed by 'in' check + typeof guard
-      const paramDocs = model.describeParams() as Record<string, { type: string; description?: string | undefined }>;
+      const paramDocs = model.describeParams() as Record<
+        string,
+        { type: string; description?: string | undefined }
+      >;
       for (const [name, desc] of Object.entries(paramDocs)) {
         lines.push(`- \`${name}\` (${desc.type}): ${desc.description ?? ''}`);
       }
