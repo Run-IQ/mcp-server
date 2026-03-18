@@ -25,10 +25,12 @@
     "lint": "eslint src/ tests/ && prettier --check src/ tests/",
     "lint:fix": "eslint src/ tests/ --fix && prettier --write src/ tests/"
   },
+  "peerDependencies": {
+    "@run-iq/core": "^0.2.7",
+    "@run-iq/plugin-sdk": "^0.2.5"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
-    "@run-iq/core": "^0.2.6",
-    "@run-iq/plugin-sdk": "^0.2.5",
     "zod": "^3.23.0"
   },
   "devDependencies": {
