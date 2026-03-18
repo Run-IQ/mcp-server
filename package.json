@@ -1,6 +1,6 @@
 {
   "name": "@run-iq/mcp-server",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "MCP server exposing the PPE engine to LLMs via stdio",
   "type": "module",
   "main": "./dist/index.js",
@@ -26,8 +26,8 @@
     "lint:fix": "eslint src/ tests/ --fix && prettier --write src/ tests/"
   },
   "peerDependencies": {
-    "@run-iq/core": "^0.2.7",
-    "@run-iq/plugin-sdk": "^0.2.5"
+    "@run-iq/core": "^0.2.8",
+    "@run-iq/plugin-sdk": "^0.2.7"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.0",
@@ -41,7 +41,7 @@
     "prettier": "^3.2.0",
     "tsup": "^8.0.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.0"
   },
   "repository": {
     "type": "git",
