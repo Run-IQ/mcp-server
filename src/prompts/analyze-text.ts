@@ -166,6 +166,13 @@ ${buildGuidelinesSection(registry)}
 4. Use the \`create_rule\` tool — it knows ALL required fields for loaded plugins
 5. Use the \`validate_rules\` tool to verify your rules are valid
 6. Read \`schema://rules\` for the complete field reference if needed
+
+## Orchestration (Complex Workflows)
+If the text describes a multi-step calculation or involves multiple tax types:
+1. Read \`schema://graph\` and \`graph://examples\` for Decision Graph patterns
+2. Use \`design_graph\` to build the graph step by step
+3. Use \`compile_graph\` to validate statically
+4. Use \`execute_graph\` to test with sample data
 ${buildExampleDocs(registry)}
 ${args.country ? `\n## Target Country: ${args.country}\n` : ''}
 ## Source Text to Analyze

@@ -1,7 +1,86 @@
 import { PPEEngine } from '@run-iq/core';
 import type { PPEPlugin, DSLEvaluator, CalculationModel } from '@run-iq/core';
 import type { PluginBundle } from '@run-iq/plugin-sdk';
+import {
+  DGCompiler,
+  DGOrchestrator,
+  CoreNodeExecutor,
+  HttpNodeExecutor,
+  CompositeExecutor,
+  StaticRuleResolver,
+} from '@run-iq/dg';
+import type { CompiledGraph, DGGraph, DGResult } from '@run-iq/dg';
 import { DescriptorRegistry } from './descriptors/registry.js';
+
+// ─── Graph Session Store ────────────────────────────────────────────────────
+
+/**
+ * In-memory store for compiled graphs during an MCP session.
+ * Allows compile_graph → execute_graph flow without re-sending JSON.
+ */
+export class GraphStore {
+  private readonly graphs = new Map<string, CompiledGraph>();
+  private readonly builders = new Map<string, DGGraph>();
+
+  /** Store a compiled graph keyed by its hash. */
+  storeCompiled(compiled: CompiledGraph): void {
+    this.graphs.set(compiled.hash, compiled);
+  }
+
+  /** Retrieve a compiled graph by hash. */
+  getCompiled(hash: string): CompiledGraph | undefined {
+    return this.graphs.get(hash);
+  }
+
+  /** List all compiled graph hashes. */
+  listCompiled(): string[] {
+    return [...this.graphs.keys()];
+  }
+
+  /** Store or update a graph being built incrementally. */
+  setBuilder(sessionId: string, graph: DGGraph): void {
+    this.builders.set(sessionId, graph);
+  }
+
+  /** Get the graph being built. */
+  getBuilder(sessionId: string): DGGraph | undefined {
+    return this.builders.get(sessionId);
+  }
+
+  /** Remove a builder session. */
+  clearBuilder(sessionId: string): void {
+    this.builders.delete(sessionId);
+  }
+}
+
+// ─── Last Execution Store ───────────────────────────────────────────────────
+
+/**
+ * Stores the result of the last DG execution for post-mortem inspection.
+ */
+export class ExecutionResultStore {
+  private readonly results = new Map<string, DGResult>();
+
+  store(requestId: string, result: DGResult): void {
+    this.results.set(requestId, result);
+    // Keep max 20 results in memory to avoid unbounded growth
+    if (this.results.size > 20) {
+      const oldest = this.results.keys().next().value as string;
+      this.results.delete(oldest);
+    }
+  }
+
+  get(requestId: string): DGResult | undefined {
+    return this.results.get(requestId);
+  }
+
+  getLast(): DGResult | undefined {
+    const entries = [...this.results.values()];
+    return entries[entries.length - 1];
+  }
+}
+
+// ─── Engine Context ─────────────────────────────────────────────────────────
 
 export interface EngineContext {
   readonly engine: PPEEngine;
@@ -9,6 +88,10 @@ export interface EngineContext {
   readonly descriptorRegistry: DescriptorRegistry;
   readonly plugins: readonly PPEPlugin[];
   readonly dsls: readonly DSLEvaluator[];
+  readonly compiler: DGCompiler;
+  readonly orchestrator: DGOrchestrator;
+  readonly graphStore: GraphStore;
+  readonly executionStore: ExecutionResultStore;
 }
 
 export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
@@ -18,7 +101,7 @@ export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
 
   if (bundles && bundles.length > 0) {
     for (const bundle of bundles) {
-      allPlugins.push(bundle.plugin);
+      allPlugins.push(bundle.plugin as unknown as PPEPlugin);
       descriptorRegistry.register(bundle.descriptor);
       if (bundle.dsls) {
         allDsls.push(...bundle.dsls);
@@ -56,5 +139,37 @@ export function createEngine(bundles?: readonly PluginBundle[]): EngineContext {
     }
   }
 
-  return { engine, models, descriptorRegistry, plugins: allPlugins, dsls: allDsls };
+  // ─── Decision Graph Bootstrap ─────────────────────────────────────
+
+  const compiler = new DGCompiler();
+
+  // Build DSL map for edge condition evaluation
+  const dslMap = new Map<string, DSLEvaluator>();
+  for (const dsl of allDsls) {
+    dslMap.set(dsl.dsl, dsl);
+  }
+
+  // Executors: Core (rules) + HTTP (enrichment)
+  const coreExecutor = new CoreNodeExecutor(engine, new StaticRuleResolver(new Map()));
+  const httpExecutor = new HttpNodeExecutor();
+  const compositeExecutor = new CompositeExecutor(coreExecutor, httpExecutor);
+
+  const orchestrator = new DGOrchestrator(compositeExecutor, dslMap, {
+    scheduling: 'eager',
+  });
+
+  const graphStore = new GraphStore();
+  const executionStore = new ExecutionResultStore();
+
+  return {
+    engine,
+    models,
+    descriptorRegistry,
+    plugins: allPlugins,
+    dsls: allDsls,
+    compiler,
+    orchestrator,
+    graphStore,
+    executionStore,
+  };
 }
