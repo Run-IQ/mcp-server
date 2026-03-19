@@ -54,7 +54,7 @@
     "url": "https://github.com/Run-IQ/mcp-server/issues"
   },
   "author": "Abdou-Raouf ATARMLA",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": ">=20.0.0"
   }
