@@ -61,6 +61,15 @@ describe('design_graph tool', () => {
     expect(result.graph).toBeDefined();
   });
 
+  it('produces a graph that compiles', async () => {
+    const ctx = createEngine([mockBundle]);
+    await buildLinear(ctx);
+
+    const graph = ctx.graphStore.getBuilder('default')!;
+
+    expect(() => ctx.compiler.compile(graph)).not.toThrow();
+  });
+
   it('removes a node together with its edges', async () => {
     const ctx = createEngine([mockBundle]);
     await buildLinear(ctx);

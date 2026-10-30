@@ -121,7 +121,7 @@ export function registerDesignGraphTool(server: McpServer, graphStore: GraphStor
           }
 
           case 'add_edge': {
-            const edgeId = `${action.from.node}→${action.to.node}`;
+            const edgeId = `${action.from.node}_to_${action.to.node}`;
             const edge: DGEdge = {
               id: edgeId,
               from: { node: action.from.node, port: action.from.port ?? 'value' },
