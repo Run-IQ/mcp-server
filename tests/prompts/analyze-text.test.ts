@@ -106,4 +106,21 @@ describe('analyze-text prompt', () => {
     const text = result.messages[0]!.content.text;
     expect(text).toContain('MOCK_RATE for simple percentage');
   });
+  it('points to the Decision Graph tools for multi-step workflows', async () => {
+    const { models, descriptorRegistry, dsls } = createEngine([mockBundle]);
+    const server = new McpServer(
+      { name: 'test', version: '0.0.1' },
+      { capabilities: { prompts: {} } },
+    );
+    registerAnalyzeTextPrompt(server, models, descriptorRegistry, dsls);
+
+    const result = await getPrompt(server, 'analyze-text', {
+      source_text: 'Any text',
+    });
+
+    const text = result.messages[0]!.content.text;
+    expect(text).toContain('## Orchestration (Complex Workflows)');
+    expect(text).toContain('design_graph');
+    expect(text).toContain('schema://graph');
+  });
 });

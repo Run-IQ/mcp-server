@@ -75,6 +75,25 @@ describe('domain-expert prompt', () => {
     expect(text).toContain('plugins://loaded');
   });
 
+  it('lists the Decision Graph tools and resources', async () => {
+    const { descriptorRegistry } = createEngine([mockBundle]);
+    const server = new McpServer(
+      { name: 'test', version: '0.0.1' },
+      { capabilities: { prompts: {} } },
+    );
+    registerDomainExpertPrompt(server, descriptorRegistry);
+
+    const result = await getPrompt(server, 'domain-expert', {
+      question: 'Help me',
+    });
+
+    const text = result.messages[0]!.content.text;
+    expect(text).toContain('compile_graph');
+    expect(text).toContain('design_graph');
+    expect(text).toContain('schema://graph');
+    expect(text).toContain('graph://examples');
+  });
+
   it('uses the domain label from descriptors', async () => {
     const { descriptorRegistry } = createEngine([mockBundle]);
     const server = new McpServer(
