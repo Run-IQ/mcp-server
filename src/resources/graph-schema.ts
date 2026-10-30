@@ -21,6 +21,10 @@ function buildGraphSchemaDocument(): string {
   lines.push('}');
   lines.push('```');
   lines.push('');
+  lines.push(
+    'Identifiers (`graph.id`, node ids, edge ids and port names) must match `^[a-zA-Z0-9_-]+$`. A node key must equal its `id`.',
+  );
+  lines.push('');
 
   // Node types
   lines.push('## Node Types');
@@ -47,13 +51,13 @@ function buildGraphSchemaDocument(): string {
   lines.push('    in: PortDescriptor[];');
   lines.push('    out: PortDescriptor[];');
   lines.push('  };');
-  lines.push('  policy?: NodePolicy;');
+  lines.push('  policy: NodePolicy;');
   lines.push('  meta?: Record<string, unknown>;');
   lines.push('}');
   lines.push('');
   lines.push('interface PortDescriptor {');
   lines.push("  name: string;         // Port name (e.g. 'value', 'breakdown')");
-  lines.push('  required?: boolean;   // If true, missing output = error');
+  lines.push('  required: boolean;    // If true, missing output = error');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -76,8 +80,8 @@ function buildGraphSchemaDocument(): string {
   lines.push('```typescript');
   lines.push('interface DGEdge {');
   lines.push('  id: string;');
-  lines.push('  from: { node: string; port?: string };  // defaults to "value"');
-  lines.push('  to: { node: string; port?: string };    // defaults to "value"');
+  lines.push('  from: { node: string; port: string };  // e.g. "value"');
+  lines.push('  to: { node: string; port: string };    // e.g. "value"');
   lines.push('  condition?: EdgeCondition;               // if absent, always active');
   lines.push('}');
   lines.push('');
@@ -94,16 +98,21 @@ function buildGraphSchemaDocument(): string {
   lines.push('');
   lines.push('```typescript');
   lines.push('interface MergeNodeConfig {');
-  lines.push("  strategy: 'wait-all' | 'first-wins' | 'quorum';");
-  lines.push('  quorum?: number;      // Required if strategy is "quorum"');
+  lines.push("  strategy: 'wait-all' | 'wait-any' | 'wait-quorum';");
+  lines.push('  quorum?: number;      // Required if strategy is "wait-quorum"');
+  lines.push("  onPartialInputs: 'fail' | 'proceed-with-available' | 'use-defaults';");
   lines.push('}');
   lines.push('```');
   lines.push('');
   lines.push('| Strategy | Behavior |');
   lines.push('|----------|----------|');
   lines.push('| `wait-all` | Wait for ALL parent nodes to complete |');
-  lines.push('| `first-wins` | Continue as soon as ANY parent completes |');
-  lines.push('| `quorum` | Continue when N parents have completed |');
+  lines.push('| `wait-any` | Continue as soon as ANY parent completes |');
+  lines.push('| `wait-quorum` | Continue when `quorum` parents have completed |');
+  lines.push('');
+  lines.push(
+    "A `wait-all` merge whose parent has `onError: 'skip'` is rejected at compile time (deadlock): give such parents `onError: 'fallback'` or use `wait-any`.",
+  );
   lines.push('');
 
   // Enrich config
@@ -111,12 +120,14 @@ function buildGraphSchemaDocument(): string {
   lines.push('');
   lines.push('```typescript');
   lines.push('interface EnrichConfig {');
-  lines.push('  url: string;          // HTTP endpoint');
+  lines.push('  endpoint: string;     // HTTP endpoint, no credentials');
   lines.push("  method?: 'GET' | 'POST';  // default: GET");
-  lines.push('  headers?: Record<string, string>;');
-  lines.push('  bodyMapping?: Record<string, string>;  // input→body mapping');
-  lines.push('  outputMapping?: Record<string, string>; // response→output mapping');
-  lines.push('  timeoutMs?: number;   // default: 5000');
+  lines.push('  timeoutMs: number;    // per attempt, max 5000');
+  lines.push('  retry?: number;       // 0-3 retries on 5xx / network error, default 0');
+  lines.push("  onFailure: 'fail' | 'fallback';  // fallback returns node.policy.fallback");
+  lines.push('  inputMapping: Record<string, string>;   // request param -> input path');
+  lines.push('  outputMapping: Record<string, string>;  // output port -> response dot-path');
+  lines.push('  responseMaxBytes?: number;  // default: 102400');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -126,9 +137,9 @@ function buildGraphSchemaDocument(): string {
   lines.push('');
   lines.push('```typescript');
   lines.push('interface SubGraphConfig {');
-  lines.push('  graph: DGGraph;       // The nested graph definition');
-  lines.push('  inputMapping?: Record<string, string>;  // parent→child input mapping');
-  lines.push('  outputMapping?: Record<string, string>; // child→parent output mapping');
+  lines.push('  graphId: string;      // id of a pre-registered compiled sub-graph');
+  lines.push('  inputMapping: Record<string, string>;   // sub-graph input -> parent path');
+  lines.push('  outputMapping: Record<string, string>;  // parent port -> sub-graph output');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -138,10 +149,12 @@ function buildGraphSchemaDocument(): string {
   lines.push('');
   lines.push('```typescript');
   lines.push('interface NodePolicy {');
-  lines.push("  onFail?: 'halt' | 'skip' | 'default';  // error handling strategy");
-  lines.push('  defaultValue?: unknown;                  // used when onFail = "default"');
-  lines.push('  maxOutputSizeKb?: number;                // output size guard');
-  lines.push('  storeRaw?: boolean;                      // store raw engine result');
+  lines.push("  onError: 'fail' | 'skip' | 'fallback';");
+  lines.push('  fallback?: Record<string, unknown>;  // outputs used when onError = "fallback"');
+  lines.push('  timeout?: number;');
+  lines.push("  onFailPropagation: 'halt' | 'skip-descendants' | 'continue';");
+  lines.push('  storeRaw?: boolean;                  // store raw engine result');
+  lines.push('  maxOutputSizeKb?: number;            // output size guard');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -151,8 +164,11 @@ function buildGraphSchemaDocument(): string {
   lines.push('');
   lines.push('```typescript');
   lines.push('interface GraphMeta {');
-  lines.push('  name: string;');
   lines.push('  description?: string;');
+  lines.push('  domain?: string;');
+  lines.push('  author?: string;');
+  lines.push('  tags?: string[];');
+  lines.push('  executionLimits?: ExecutionLimits;');
   lines.push('}');
   lines.push('```');
 
