@@ -17,7 +17,7 @@ function buildGraphSchemaDocument(): string {
   lines.push('  version: string;      // Semver version');
   lines.push('  nodes: Record<string, DGNode>;');
   lines.push('  edges: DGEdge[];');
-  lines.push('  meta: GraphMeta;');
+  lines.push('  meta?: GraphMeta;');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -58,6 +58,8 @@ function buildGraphSchemaDocument(): string {
   lines.push('interface PortDescriptor {');
   lines.push("  name: string;         // Port name (e.g. 'value', 'breakdown')");
   lines.push('  required: boolean;    // If true, missing output = error');
+  lines.push('  schema?: unknown;     // Informational, not checked at run time');
+  lines.push('  default?: unknown;    // Input value used when no wired value arrives');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -82,15 +84,20 @@ function buildGraphSchemaDocument(): string {
   lines.push('  id: string;');
   lines.push('  from: { node: string; port: string };  // e.g. "value"');
   lines.push('  to: { node: string; port: string };    // e.g. "value"');
-  lines.push('  condition?: EdgeCondition;               // if absent, always active');
+  lines.push('  portAlias?: string;  // input key the target node receives instead of to.port');
+  lines.push('  condition?: EdgeCondition;              // if absent, always active');
   lines.push('}');
   lines.push('');
   lines.push('interface EdgeCondition {');
   lines.push("  dsl: string;          // e.g. 'jsonlogic'");
   lines.push('  expression: unknown;  // DSL expression');
-  lines.push("  scope?: 'source-output' | 'full-context';  // default: source-output");
+  lines.push("  scope: 'source-output' | 'full-context';");
   lines.push('}');
   lines.push('```');
+  lines.push('');
+  lines.push(
+    '`source-output` evaluates the expression against the source node outputs; `full-context` against the whole execution context.',
+  );
   lines.push('');
 
   // Merge strategies
@@ -154,7 +161,7 @@ function buildGraphSchemaDocument(): string {
   lines.push('  timeout?: number;');
   lines.push("  onFailPropagation: 'halt' | 'skip-descendants' | 'continue';");
   lines.push('  storeRaw?: boolean;                  // store raw engine result');
-  lines.push('  maxOutputSizeKb?: number;            // output size guard');
+  lines.push('  maxOutputSizeKb?: number;            // output size guard, default 512');
   lines.push('}');
   lines.push('```');
   lines.push('');
@@ -169,6 +176,14 @@ function buildGraphSchemaDocument(): string {
   lines.push('  author?: string;');
   lines.push('  tags?: string[];');
   lines.push('  executionLimits?: ExecutionLimits;');
+  lines.push('}');
+  lines.push('');
+  lines.push('interface ExecutionLimits {');
+  lines.push('  maxNodes?: number;          // default 500');
+  lines.push('  maxDepth?: number;          // default 50');
+  lines.push('  maxEvents?: number;         // default 10000');
+  lines.push('  maxDurationMs?: number;     // default 30000');
+  lines.push('  maxParallelNodes?: number;  // default 20');
   lines.push('}');
   lines.push('```');
 

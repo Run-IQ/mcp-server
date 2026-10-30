@@ -48,6 +48,13 @@ describe('schema://graph resource', () => {
     }
     // SubGraphConfig
     expect(text).toContain('graphId: string');
+    // EdgeCondition.scope is required; a missing scope is not "source-output"
+    expect(text).toContain("  scope: 'source-output' | 'full-context';");
+    // Optional fields
+    expect(text).toContain('  meta?: GraphMeta;');
+    expect(text).toContain('  portAlias?: string;');
+    expect(text).toContain('  schema?: unknown;');
+    expect(text).toContain('  default?: unknown;');
   });
 
   it('does not document fields that @run-iq/dg does not have', async () => {
@@ -58,5 +65,7 @@ describe('schema://graph resource', () => {
     expect(text).not.toContain('onFail?');
     expect(text).not.toContain('defaultValue');
     expect(text).not.toContain('url: string');
+    expect(text).not.toContain('scope?:');
+    expect(text).not.toContain('default: source-output');
   });
 });
