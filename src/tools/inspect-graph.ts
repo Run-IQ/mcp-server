@@ -73,7 +73,9 @@ export function registerInspectGraphTool(
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({ error: 'No graph found. Provide graphHash or inline graph.' }),
+                text: JSON.stringify({
+                  error: 'No graph found. Provide graphHash or inline graph.',
+                }),
               },
             ],
             isError: true,

@@ -13,10 +13,7 @@ export function registerCompileGraphTool(
     'Compile a Decision Graph (DGGraph) into an executable CompiledGraph. Performs static validation (cycles, ports, wiring, policies). Returns the compiled graph hash, level count, and any warnings.',
     {
       graph: z.record(z.unknown()).describe('The DGGraph JSON object (nodes, edges, meta)'),
-      strict: z
-        .boolean()
-        .optional()
-        .describe('If true, warnings become errors. Default: false'),
+      strict: z.boolean().optional().describe('If true, warnings become errors. Default: false'),
     },
     async (args) => {
       try {

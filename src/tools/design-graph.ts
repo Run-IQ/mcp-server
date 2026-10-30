@@ -39,7 +39,10 @@ const ActionSchema = z.discriminatedUnion('action', [
       .array(z.object({ name: z.string(), required: z.boolean().optional() }))
       .optional()
       .describe('Output port definitions'),
-    meta: z.record(z.unknown()).optional().describe('Node metadata (enrichConfig, mergeConfig, etc.)'),
+    meta: z
+      .record(z.unknown())
+      .optional()
+      .describe('Node metadata (enrichConfig, mergeConfig, etc.)'),
   }),
   z.object({
     action: z.literal('add_edge'),

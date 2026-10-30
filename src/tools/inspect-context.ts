@@ -40,8 +40,7 @@ export function registerInspectContextTool(
         // Group events by node
         const nodeEvents: Record<string, unknown[]> = {};
         for (const event of result.events) {
-          const nodeId =
-            (event as Record<string, unknown>)['nodeId'] as string | undefined;
+          const nodeId = (event as Record<string, unknown>)['nodeId'] as string | undefined;
           const key = nodeId ?? '__graph__';
           if (!nodeEvents[key]) nodeEvents[key] = [];
           nodeEvents[key].push(event);

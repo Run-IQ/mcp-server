@@ -29,16 +29,10 @@ function buildGraphSchemaDocument(): string {
   lines.push('|------|---------|-----------------|');
   lines.push('| `compute` | Execute PPE rules via a model | `model` field |');
   lines.push('| `enrich` | Fetch external data (HTTP) | `meta.enrichConfig` |');
-  lines.push(
-    '| `branch` | Route execution to different paths | Conditional edges out |',
-  );
+  lines.push('| `branch` | Route execution to different paths | Conditional edges out |');
   lines.push('| `guard` | Block execution if condition fails | Conditional edges |');
-  lines.push(
-    '| `merge` | Join multiple branches | `meta.mergeConfig` (strategy) |',
-  );
-  lines.push(
-    '| `subgraph` | Execute a nested Decision Graph | `meta.subGraphConfig` |',
-  );
+  lines.push('| `merge` | Join multiple branches | `meta.mergeConfig` (strategy) |');
+  lines.push('| `subgraph` | Execute a nested Decision Graph | `meta.subGraphConfig` |');
   lines.push('');
 
   // DGNode

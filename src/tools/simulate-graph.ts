@@ -23,14 +23,8 @@ export function registerSimulateGraphTool(
     'simulate_graph',
     'Compare N scenarios using the same Decision Graph. Executes each scenario independently and returns side-by-side results for comparison.',
     {
-      graphHash: z
-        .string()
-        .optional()
-        .describe('Hash of a previously compiled graph'),
-      graph: z
-        .record(z.unknown())
-        .optional()
-        .describe('Inline DGGraph JSON'),
+      graphHash: z.string().optional().describe('Hash of a previously compiled graph'),
+      graph: z.record(z.unknown()).optional().describe('Inline DGGraph JSON'),
       scenarios: z
         .array(ScenarioSchema)
         .min(1)
@@ -51,7 +45,9 @@ export function registerSimulateGraphTool(
             content: [
               {
                 type: 'text',
-                text: JSON.stringify({ error: 'No graph found. Provide graphHash or inline graph.' }),
+                text: JSON.stringify({
+                  error: 'No graph found. Provide graphHash or inline graph.',
+                }),
               },
             ],
             isError: true,
@@ -67,7 +63,9 @@ export function registerSimulateGraphTool(
               requestId: scenario.meta.requestId,
               tenantId: scenario.meta.tenantId,
               timestamp: new Date().toISOString(),
-              ...(scenario.meta.effectiveDate ? { effectiveDate: scenario.meta.effectiveDate } : {}),
+              ...(scenario.meta.effectiveDate
+                ? { effectiveDate: scenario.meta.effectiveDate }
+                : {}),
             },
           );
 
