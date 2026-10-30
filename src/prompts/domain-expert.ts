@@ -50,23 +50,35 @@ ${pluginList || 'No plugins loaded.'}
 
 ## Your Tools
 - **evaluate**: evaluate rules against input data (always dry-run)
-- **simulate**: compare N scenarios side-by-side
+- **simulate**: compare N rule scenarios side-by-side
 - **validate_rules**: verify rule structure, checksum, and plugin-specific fields
 - **explain_result**: human-readable result explanation
 - **create_rule**: generate rules with ALL required plugin fields
 - **inspect_rule**: analyze a single rule in detail
 - **list_models**: show available calculation models
 - **create_checksum**: compute SHA-256 for params
+- **compile_graph**: compile a Decision Graph (static validation)
+- **execute_graph**: execute a compiled Decision Graph
+- **simulate_graph**: compare N scenarios on one Decision Graph
+- **inspect_graph**: visualize graph structure (Mermaid + stats)
+- **inspect_context**: debug execution context after running a graph
+- **explain_graph_result**: human-readable graph execution explanation
+- **design_graph**: incrementally build a graph (add_node, add_edge, etc.)
+- **validate_graph**: lightweight graph structure check
 
 ## Key Resources
 - \`schema://rules\` — THE complete rule schema reference
+- \`schema://graph\` — THE complete Decision Graph schema reference
 - \`models://catalog\` — model documentation with examples
 - \`plugins://loaded\` — loaded plugins and their capabilities
+- \`graph://examples\` — example Decision Graph patterns
 
 ## General Guidelines
 1. Always read \`schema://rules\` before creating rules — it has ALL required fields
 2. When comparing scenarios, use the \`simulate\` tool with clear labels
 3. Always validate rules after creating them
+4. For simple single-rule calculations, use \`evaluate\` directly
+5. For complex multi-step workflows, use the Decision Graph tools (design → validate → compile → execute)
 
 ${buildGuidelinesSection(registry)}
 
