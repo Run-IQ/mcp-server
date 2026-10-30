@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { DGCompiler } from '@run-iq/dg';
 import type { DGGraph } from '@run-iq/dg';
 import { registerGraphExamplesResource } from '../../src/resources/graph-examples.js';
 import { readResource } from '../helpers.js';
@@ -26,5 +27,14 @@ describe('graph://examples resource', () => {
     expect(text).toContain('## Simple Linear (2 compute nodes)');
     expect(text).toContain('## Multi-Tax Bilan with Enrich + Merge');
     expect(extractGraphs(text)).toHaveLength(3);
+  });
+
+  it('gives examples that compile', async () => {
+    const graphs = extractGraphs(await readExamples());
+    const compiler = new DGCompiler();
+
+    for (const graph of graphs) {
+      expect(() => compiler.compile(graph), graph.id).not.toThrow();
+    }
   });
 });

@@ -5,7 +5,17 @@ import type { DGGraph } from '@run-iq/dg';
 // These are reference examples for LLMs; runtime validation happens in compile_graph.
 function buildExamples(): Array<{ title: string; description: string; graph: DGGraph }> {
   const defaultPolicy = { onError: 'skip' as const, onFailPropagation: 'continue' as const };
-  const failPolicy = { onError: 'skip' as const, onFailPropagation: 'skip-descendants' as const };
+  // Parents of a wait-all merge must always produce an output, so they fall back instead of skipping.
+  const zeroFallbackPolicy = {
+    onError: 'fallback' as const,
+    fallback: { value: 0 },
+    onFailPropagation: 'continue' as const,
+  };
+  const unknownFallbackPolicy = {
+    onError: 'fallback' as const,
+    fallback: { value: 'unknown' },
+    onFailPropagation: 'continue' as const,
+  };
 
   return [
     // ─── Example 1: Simple Linear ────────────────────────────
@@ -41,7 +51,7 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
         },
         edges: [
           {
-            id: 'base→surcharge',
+            id: 'base_to_surcharge',
             from: { node: 'base_tax', port: 'value' },
             to: { node: 'surcharge', port: 'value' },
           },
@@ -73,7 +83,7 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
                 { name: 'breakdown', required: false },
               ],
             },
-            policy: defaultPolicy,
+            policy: zeroFallbackPolicy,
           },
           calc_tva: {
             id: 'calc_tva',
@@ -83,7 +93,7 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
               in: [{ name: 'value', required: true }],
               out: [{ name: 'value', required: true }],
             },
-            policy: defaultPolicy,
+            policy: zeroFallbackPolicy,
           },
           check_compliance: {
             id: 'check_compliance',
@@ -92,14 +102,15 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
               in: [{ name: 'value', required: true }],
               out: [{ name: 'value', required: true }],
             },
-            policy: failPolicy,
+            policy: unknownFallbackPolicy,
             meta: {
               enrichConfig: {
-                url: 'https://api.otr.tg/compliance/status',
+                endpoint: 'https://api.otr.tg/compliance/status',
                 method: 'GET',
-                bodyMapping: { nif: 'nif' },
-                outputMapping: { status: 'value' },
+                inputMapping: { nif: 'nif' },
+                outputMapping: { value: 'status' },
                 timeoutMs: 3000,
+                onFailure: 'fallback',
               },
             },
           },
@@ -125,17 +136,17 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
         },
         edges: [
           {
-            id: 'irpp→merge',
+            id: 'irpp_to_merge',
             from: { node: 'calc_irpp', port: 'value' },
             to: { node: 'merge_results', port: 'irpp' },
           },
           {
-            id: 'tva→merge',
+            id: 'tva_to_merge',
             from: { node: 'calc_tva', port: 'value' },
             to: { node: 'merge_results', port: 'tva' },
           },
           {
-            id: 'compliance→merge',
+            id: 'compliance_to_merge',
             from: { node: 'check_compliance', port: 'value' },
             to: { node: 'merge_results', port: 'compliance' },
           },
@@ -185,7 +196,7 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
         },
         edges: [
           {
-            id: 'entry→simplified',
+            id: 'entry_to_simplified',
             from: { node: 'entry', port: 'value' },
             to: { node: 'simplified', port: 'value' },
             condition: {
@@ -195,7 +206,7 @@ function buildExamples(): Array<{ title: string; description: string; graph: DGG
             },
           },
           {
-            id: 'entry→normal',
+            id: 'entry_to_normal',
             from: { node: 'entry', port: 'value' },
             to: { node: 'normal', port: 'value' },
             condition: {
