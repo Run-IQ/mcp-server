@@ -138,7 +138,8 @@ export function registerDesignGraphTool(server: McpServer, graphStore: GraphStor
           }
 
           case 'remove_node': {
-            const { [action.id]: _removed, ...remaining } = graph.nodes;
+            const remaining = { ...graph.nodes };
+            delete remaining[action.id];
             graph = {
               ...graph,
               nodes: remaining,

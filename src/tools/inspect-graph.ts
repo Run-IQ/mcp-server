@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { DGGraph, CompiledGraph, DGCompiler } from '@run-iq/dg';
+import type { DGGraph, DGCompiler } from '@run-iq/dg';
 import { toMermaid } from '@run-iq/dg';
 import type { GraphStore } from '../engine.js';
 
