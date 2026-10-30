@@ -14,13 +14,7 @@ async function readSchema(): Promise<string> {
 
 describe('schema://graph resource', () => {
   it('documents the DGGraph format', async () => {
-    const server = new McpServer(
-      { name: 'test', version: '0.0.1' },
-      { capabilities: { resources: {} } },
-    );
-    registerGraphSchemaResource(server);
-
-    const text = await readResource(server, 'schema://graph');
+    const text = await readSchema();
 
     expect(text).toContain('# Decision Graph Schema Reference');
     expect(text).toContain('## DGGraph Structure');

@@ -19,8 +19,9 @@ describe('inspect_graph tool', () => {
 
     const result = await callTool(makeServer(ctx), 'inspect_graph', { graph: linearGraph() });
 
-    expect(result.mermaid).toContain('a');
-    expect(result.mermaid).toContain('b');
+    const mermaid = (result.mermaid as string).split('\n').map((l) => l.trim());
+    expect(mermaid[0]).toBe('graph TD');
+    expect(mermaid).toContain('a --> b');
     expect(result.compilation).toBe('Compiled into 2 execution levels');
     expect(result.totalNodes).toBe(2);
     expect(result.totalEdges).toBe(1);
