@@ -70,6 +70,23 @@ The engine runs in dry-run, non-strict mode: nothing is persisted and `meta.effe
 
 Pass dates to `create_rule` as full ISO strings (`2025-01-01T00:00:00.000Z`). With a date-only value like `2025-01-01`, the checksum is computed on that string, and `evaluate` later skips the rule because it normalizes the date first.
 
+## Decision graph tools
+
+These tools build and run [decision graphs](https://github.com/Run-IQ/decision-graph) (`@run-iq/dg`): nodes that compute, fetch data, branch or merge, wired by edges.
+
+| Tool | |
+|---|---|
+| `design_graph` | Build a graph one action at a time (`add_node`, `add_edge`, `remove_node`, `remove_edge`, `set_meta`, `get_current`, `reset`), kept per `sessionId` |
+| `validate_graph` | Quick structural check without compiling |
+| `compile_graph` | Compile a graph and keep it in memory under its hash |
+| `inspect_graph` | Mermaid diagram, node counts, ports, root and leaf nodes |
+| `execute_graph` | Run a graph, given inline or by hash, against an input |
+| `simulate_graph` | Run the same graph against up to 10 scenarios |
+| `inspect_context` | Per-node outputs and events of a past run, by `requestId` |
+| `explain_graph_result` | Turn a past run into a readable summary |
+
+Compiled graphs and the last 20 runs live in memory for the session. Compute nodes are evaluated with no rules attached, so they output `0`.
+
 ## Resources and prompts
 
 | | |
@@ -77,8 +94,11 @@ Pass dates to `create_rule` as full ISO strings (`2025-01-01T00:00:00.000Z`). Wi
 | `schema://rules` | Rule schema, plugin fields, model params, input fields and examples |
 | `models://catalog` | Documentation of the available models |
 | `plugins://loaded` | Loaded plugins, DSLs and descriptors |
+| `schema://graph` | Decision graph format: nodes, edges, ports, policies, merge, enrich and subgraph configs |
+| `graph://examples` | Example graphs: linear, merge with enrichment, conditional branching |
 | `analyze-text` prompt | Turn a text (law, regulation, policy) into rules. Args: `source_text`, optional `country` |
 | `domain-expert` prompt | Answer a `question` using the loaded plugins' domain |
+| `orchestration-architect` prompt | Design a decision graph from a `requirement`, optional `country` |
 
 ## License
 
